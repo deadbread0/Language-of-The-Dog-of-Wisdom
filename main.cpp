@@ -12,6 +12,6 @@ int main()
     DumpTree(GetNodeG(data, &pos), output_filee);
     // printf("2");
     pos = 0;
-    printf("%d", GetG(data, &pos));
+    // printf("%d", GetG(data, &pos));
     return 0;
 }

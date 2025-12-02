@@ -1,6 +1,7 @@
 #include "headers/tree_functions.h"
 #include "headers/functions.h"
 #include "headers/const.h"
+#include <cstring>
 
 node_t* GetNodeG(char* s, int* pos)
 {
@@ -10,7 +11,7 @@ node_t* GetNodeG(char* s, int* pos)
     if (s[*pos] != '$')
         SyntaxError();
     (*pos)++;
-    printf("%p", val);
+
     return val;
 }
 
@@ -75,6 +76,9 @@ node_t* GetNodeP(char* s, int* pos)
         return val;
     }
 
+    else if (s[*pos] <= 'z' && s[*pos] >= 'a')
+        return GetNodeV(s, pos);
+
     else
         return GetNodeM(s, pos);
 }
@@ -90,6 +94,38 @@ node_t* GetNodeM(char* s, int* pos)
 
     else
         return GetNodeN(s, pos);
+}
+
+node_t* GetNodeV(char* s, int* pos)
+{
+    char* buf = (char*)calloc(10, sizeof(char));
+    int i = 0;
+    buf[i] = s[*pos];
+    i++;
+    (*pos)++;
+
+    while ((s[*pos] <= 'z' && s[*pos] >= 'a') || ('0' >= s[*pos] && s[*pos] >= '9'))
+    {
+        buf[i] = s[*pos];
+        i++;
+        (*pos)++;
+    }
+
+    int amount_of_func = sizeof(arr_of_const_func) / sizeof(arr_of_const_func[0]);
+    for (int j = 0; j < amount_of_func; j++)
+    {
+        if (!strncmp(buf, arr_of_const_func[j], 10))
+        {
+            return GetNodeF(s, pos, buf);
+        }
+    }
+    
+    return NewVarNode(buf, nullptr, nullptr);
+}
+
+node_t* GetNodeF(char* s, int* pos, char* buf)
+{
+    return NewOpNode(buf, nullptr, GetNodeP(s, pos));
 }
 
 node_t* MakeNode()
@@ -128,6 +164,18 @@ node_t* NewNumNode(double num, node_t* left_node, node_t* right_node)
     node_t* new_node = MakeNode();
     new_node->type = NUM;
     (new_node->value).op_num = num;
+    new_node->left = left_node;
+    new_node->right = right_node;
+    return new_node;
+}
+
+node_t* NewVarNode(char* var, node_t* left_node, node_t* right_node)
+{
+    // assert(operation != nullptr);
+
+    node_t* new_node = MakeNode();
+    new_node->type = VAR;
+    (new_node->value).op_name = var;
     new_node->left = left_node;
     new_node->right = right_node;
     return new_node;
