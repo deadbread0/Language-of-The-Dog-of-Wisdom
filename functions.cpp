@@ -1,8 +1,13 @@
 #include "headers/functions.h"
 
-int GetG(char* s, int* pos)
+int GetAll(char* s, int* pos)
 {
-    int val = GetE(s, pos);
+    assert(s != nullptr);
+    assert(pos != nullptr);
+
+    SkipSpace(s, pos);
+
+    int val = GetExpressionWithAddOrSub(s, pos);
     // printf("g:%c, %d\n", s[*pos], *pos);
 
     if (s[*pos] != '$')
@@ -11,8 +16,13 @@ int GetG(char* s, int* pos)
     return val;
 }
 
-int GetN(char* s, int* pos)
+int GetNum(char* s, int* pos)
 {
+    assert(s != nullptr);
+    assert(pos != nullptr);
+
+    SkipSpace(s, pos);
+
     int val = 0;
     // printf("n:%c\n", s[*pos]);
 
@@ -28,14 +38,19 @@ int GetN(char* s, int* pos)
     return val;
 }
 
-int GetE(char* s, int* pos)
+int GetExpressionWithAddOrSub(char* s, int* pos)
 {
-    int val = GetT(s, pos);
+    assert(s != nullptr);
+    assert(pos != nullptr);
+
+    SkipSpace(s, pos);
+
+    int val = GetExpressionWithMulOrDiv(s, pos);
     while (s[*pos] == '+' || s[*pos] == '-')
     {
         int prev_pos = *pos;
         (*pos)++;
-        int val2 = GetT(s, pos);
+        int val2 = GetExpressionWithMulOrDiv(s, pos);
         if (s[prev_pos] == '+')
             val+=val2;
         else
@@ -44,14 +59,19 @@ int GetE(char* s, int* pos)
     return val;
 }
 
-int GetT(char* s, int* pos)
+int GetExpressionWithMulOrDiv(char* s, int* pos)
 {
-    int val = GetP(s, pos);
+    assert(s != nullptr);
+    assert(pos != nullptr);
+
+    SkipSpace(s, pos);
+
+    int val = GetExpressionInBrackets(s, pos);
     while (s[*pos] == '*' || s[*pos] == '/')
     {
         int prev_pos = *pos;
         (*pos)++;
-        int val2 = GetP(s, pos);
+        int val2 = GetExpressionInBrackets(s, pos);
         if (s[prev_pos] == '*')
             val*=val2;
         else
@@ -60,58 +80,54 @@ int GetT(char* s, int* pos)
     return val;
 }
 
-int GetP(char* s, int* pos)
+int GetExpressionInBrackets(char* s, int* pos)
 {
+    assert(s != nullptr);
+    assert(pos != nullptr);
     // printf("p:%c\n", s[*pos]);
+
+    SkipSpace(s, pos);
 
     if (s[*pos] == '(')
     {
         (*pos)++;
-        int val = GetE(s, pos);
+        int val = GetExpressionWithAddOrSub(s, pos);
         (*pos)++;
         return val;
     }
-
-    // else if (s[*pos] <= 'z' && s[*pos] >= 'a')
-    // {
-    //     char* buf = (char*)calloc(10, sizeof(char));
-    //     GetV(s, pos, buf);
-    // }
-        // return GetV(s, pos);
     else
-        return GetM(s, pos);
+        return GetNumBelowZero(s, pos);
 }
 
-int GetM(char* s, int* pos)
+int GetNumBelowZero(char* s, int* pos)
 {
+    assert(s != nullptr);
+    assert(pos != nullptr);
+
+    SkipSpace(s, pos);
+
     if (s[*pos] == '-')
     {
         (*pos)++;
-        int val = GetN(s, pos);
+        int val = GetNum(s, pos);
         return val * (-1);
     }
 
     else
-        return GetN(s, pos);
+        return GetNum(s, pos);
 }
-
-// void GetV(char* s, int* pos, char* buf)
-// {
-//     int i = 0;
-//     buf[i] = s[*pos];
-//     i++;
-//     (*pos)++;
-
-//     while ((s[*pos] <= 'z' && s[*pos] >= 'a') || ('0' >= s[*pos] && s[*pos] >= '9'))
-//     {
-//         buf[i] = s[*pos];
-//         i++;
-//         (*pos)++;
-//     }
-// }
 
 void SyntaxError()
 {
     printf("syntax error\n");
     exit(1);
+}
+
+void SkipSpace(char* s, int* pos)
+{
+    assert(s != nullptr);
+    assert(pos != nullptr);
+
+    while (s[*pos] == ' ' || s[*pos] == '\n')
+        (*pos)++;
 }

@@ -2,7 +2,7 @@
 
 char* PutDataFromFileToBuffer()
 {
-    char* input_file = "files/input_file";
+    char* input_file = (char*)"files/input_file.txt";
     int size = GetSizeOfInputFile(input_file);
     // printf("size: %d\n", size);
 
@@ -15,7 +15,7 @@ char* PutDataFromFileToBuffer()
     }
 
     FILE* filee = fopen(input_file, "r");
-    buffer = fgets(buffer, size + 1, filee);
+    fread(buffer, sizeof(char), size + 1, filee);
 
     if (!buffer)
     {

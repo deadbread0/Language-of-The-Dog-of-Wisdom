@@ -1,12 +1,17 @@
 #include <stdio.h>
 #define FOR_TYPES
-typedef double (*func_ptr)(double, double);
+typedef int (*func_ptr)(int, int);
 
 enum typee 
 {
     OP,
     VAR, 
-    NUM
+    NUM, 
+    UOP,
+    BRACKET_OPEN,
+    BRACKET_CLOSE,
+    OP_IF,
+    OP_EQUAL,
 };
 
 struct typee_t
@@ -28,4 +33,10 @@ struct node_t
     node_t* left;
     node_t* right;
     node_t* prev;
+};  
+
+struct operation_opt_t
+{
+    char* op_name;
+    func_ptr ptr;
 };
