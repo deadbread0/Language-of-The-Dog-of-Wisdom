@@ -10,8 +10,19 @@ enum typee
     UOP,
     BRACKET_OPEN,
     BRACKET_CLOSE,
+    FBRACKET_OPEN,
+    FBRACKET_CLOSE,
     OP_IF,
     OP_EQUAL,
+    END,
+    MINUS,
+    PLUS,
+    MULT,
+    DIVN,
+    OP_FUNC,
+    OP_WHILE,
+    DEGREE,
+    COMP
 };
 
 struct typee_t
@@ -26,6 +37,13 @@ union operation_t
     char* op_name;
 };
 
+struct names_t
+{
+    int num;
+    char* var;
+    int last_i;
+};
+
 struct node_t
 {
     typee type;
@@ -35,8 +53,9 @@ struct node_t
     node_t* prev;
 };  
 
+
 struct operation_opt_t
 {
-    char* op_name;
+    typee op_name;
     func_ptr ptr;
 };

@@ -10,17 +10,17 @@
 
 
 
-node_t* GetNodeG(char* s, int* pos);
-node_t* GetNodeN(char* s, int* pos);
-node_t* GetNodeE(char* s, int* pos);
-node_t* GetNodeT(char* s, int* pos);
-node_t* GetNodeP(char* s, int* pos);
-node_t* GetNodeM(char* s, int* pos);
-node_t* GetNodeV(char* s, int* pos);
-node_t* GetNodeF(char* s, int* pos, char* buf);
-node_t* GetNodeA(char* s, int* pos);
-node_t* GetNodeIF(char* s, int* pos);
-void GetNodeOP(char* s, int* pos, node_t* val, node_t* prev_val);
+node_t* GetNodeG(node_t* tokens, int* pos);
+node_t* GetNodeN(node_t* tokens, int* pos);
+node_t* GetNodeE(node_t* tokens, int* pos);
+node_t* GetNodeT(node_t* tokens, int* pos);
+node_t* GetNodeP(node_t* tokens, int* pos);
+node_t* GetNodeM(node_t* tokens, int* pos);
+node_t* GetNodeV(node_t* tokens, int* pos);
+node_t* GetNodeF(node_t* tokens, int* pos);
+node_t* GetNodeA(node_t* tokens, int* pos);
+node_t* GetNodeIF(node_t* tokens, int* pos);
+// void GetNodeOP(char* s, int* pos, node_t* val, node_t* prev_val);
 node_t* MakeNode();
 node_t* NewOpNode(char* operation, node_t* left_node, node_t* right_node);
 node_t* NewNumNode(double num, node_t* left_node, node_t* right_node);

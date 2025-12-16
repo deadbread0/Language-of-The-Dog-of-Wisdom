@@ -4,12 +4,23 @@
 size_t LexAnalysis(char* s, int* pos, node_t* tokens)
 {
     size_t n = 0;
+
     while (s[*pos] != '\0')
     {
+        // printf(",%c,", s[*pos]);
+
+        if (CompareWords(s, pos, (char*)"/*"))
+        {
+            while (!CompareWords(s, pos, (char*)"*/"))
+                (*pos)++;
+
+            continue;
+        }
+
         if (s[*pos] == '(')
         {
             tokens[n].type = BRACKET_OPEN;
-            tokens[n].value.op_name = (char*)s[*pos];
+            (tokens + n)->value.op_name = (char*)"(";
             n++;
             (*pos)++;
             continue;
@@ -18,7 +29,25 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
         if (s[*pos] == ')')
         {
             tokens[n].type = BRACKET_CLOSE;
-            tokens[n].value.op_name = (char*)s[*pos];
+            (tokens + n)->value.op_name = (char*)")";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == '{')
+        {
+            tokens[n].type = FBRACKET_OPEN;
+            (tokens + n)->value.op_name = (char*)"{";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == '}')
+        {
+            tokens[n].type = FBRACKET_CLOSE;
+            (tokens + n)->value.op_name = (char*)"}";
             n++;
             (*pos)++;
             continue;
@@ -26,8 +55,27 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
 
         if (CompareWords(s, pos, (char*)IF))
         {
-            tokens[n].type = OP;
-            tokens[n].value.op_name = (char*)IF;
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            tokens[n].type = OP_IF;
+            (tokens + n)->value.op_name = (char*)IF;
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (CompareWords(s, pos, (char*)WHILE))
+        {
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            tokens[n].type = OP_WHILE;
+            (tokens + n)->value.op_name = (char*)WHILE;
             n++;
             (*pos)++;
             continue;
@@ -35,23 +83,27 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
 
         if (CompareWords(s, pos, (char*)EQUAL))
         {
-            tokens[n].type = OP;
-            tokens[n].value.op_name = (char*)EQUAL;
+            if (s[*pos] == '=')
+            {
+                tokens[n].type = COMP;
+                (tokens + n)->value.op_name = (char*)"==";
+                n++;
+                (*pos)++;
+                continue;
+            }
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            // printf("#%c#", s[*pos]);
+            tokens[n].type = OP_EQUAL;
+            (tokens + n)->value.op_name = (char*)"=";
             n++;
             (*pos)++;
             continue;
         }
 
-        if (CompareWords(s, pos, (char*)"/*"))
-        {
-            (*pos)++;
-            while (!CompareWords(s, pos, (char*)"*/"))
-            {
-                (*pos)++;
-            }
-            (*pos)++;
-            continue;
-        }
 
         if ('0' <= s[*pos] && s[*pos] <= '9')
         {
@@ -60,11 +112,116 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             while ('0' <= s[*pos] && s[*pos] <= '9')
             {
                 num = num * 10 + (int)s[*pos] - '0';
+                (*pos)++;
             }
 
+            // printf("")
             tokens[n].type = NUM;
-            tokens[n].value.op_num = num;
+            // printf("||%d||", num);
+            (tokens + n)->value.op_num = num;///
+            n++;
 
+            // (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == ';')
+        {
+            tokens[n].type = UOP;
+            (tokens + n)->value.op_name = (char*)";";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == '-')
+        {
+            tokens[n].type = MINUS;
+            (tokens + n)->value.op_name = (char*)"-";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == '+')
+        {
+            tokens[n].type = PLUS;
+            (tokens + n)->value.op_name = (char*)"+";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == '*')
+        {
+            tokens[n].type = MULT;
+            (tokens + n)->value.op_name = (char*)"*";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (s[*pos] == '/')
+        {
+            tokens[n].type = DIVN;
+            (tokens + n)->value.op_name = (char*)"/";
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        int amount_of_const_func = sizeof(arr_of_const_func) / sizeof(arr_of_const_func[0]);
+        for (int i = 0; i < amount_of_const_func; i++)
+        {
+            // printf("@");
+            if (CompareWords(s, pos, (char*)arr_of_const_func[i]))
+            {
+                // printf("~%c~", s[*pos]);
+                (tokens + n)->type = OP_FUNC;
+                (tokens + n)->value.op_name = (char*)arr_of_const_func[i];
+                n++;
+
+                continue;
+            }
+        }
+
+        if (isalnum(s[*pos]))
+        {
+            // printf("*");
+            char* arr = (char*)calloc(MAX_LEN_OF_OPERATION, sizeof(char));
+            int j = 0;
+            while (isalnum(s[*pos]))
+            {
+                // printf("<%c>", arr[j]);
+                arr[j] = s[*pos];
+                j++;
+                (*pos)++;
+            }
+            (tokens + n)->type = VAR;
+
+            int c = 0;
+            if (isspace(s[(*pos) + c]))
+            {
+                while (isspace(s[(*pos) + c]))
+                {
+                    c++;
+                }
+            }
+            if (s[(*pos) + c] == '(')
+                (tokens + n)->type = OP_FUNC;
+
+            (tokens + n)->value.op_name = arr; 
+            n++;
+            continue;
+        }
+
+        // printf("_%s_", tokens[n-1].value) ;
+        
+        if (s[*pos] == '$')
+        {
+            (tokens + n)->type = END;
+            (tokens + n)->value.op_name = (char*)"$";
+            n++;
             (*pos)++;
             continue;
         }
@@ -78,6 +235,7 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
     }
+    return n;
 }
 
 bool CompareWords(char* s, int* pos, char* word)

@@ -1,423 +1,231 @@
 #include "headers/tree_functions.h"
 #include <cstring>
 
-node_t* GetNodeG(char* s, int* pos)///name
+node_t* GetNodeG(node_t* tokens, int* pos)///name
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
     node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
+    val->type = UOP;
     node_t* prev_val = nullptr;
 
     do
     {
-        SkipSpace(s, pos);
-
-        int len_of_if = strlen(IF), counter = 0;
-        for (int i = 0; i < len_of_if; i++)
+        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
         {
-            if (s[(*pos) + i] == IF[i])
-                counter++;
-            else
-                break;
-        }
-
-        if (counter == len_of_if)//
-        {
-            (*pos) += len_of_if;
-            SkipSpace(s, pos);
-            val->right = GetNodeIF(s, pos);
+            val->right = GetNodeIF(tokens, pos);
         }
 
         else
-            val->right = GetNodeA(s, pos);
+            val->right = GetNodeA(tokens, pos);
 
         (*pos)++;
         prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
         prev_val = val;
         val = NewOpNode((char*)COMB, prev_val, nullptr);
+        // printf("!%d %d\n", *pos, prev_val);
 
-        SkipSpace(s, pos);
+        if (tokens[*pos].type == UOP)
+            (*pos)++;
 
-    } while (s[*pos] != '$');
+    } while (tokens[*pos].type != END);
 
-    if (s[*pos] != '$')
+    // printf("^[%d]", tokens[(*pos)].type);
+    if (tokens[*pos].type != END)
         SyntaxError();
     (*pos)++;
 
     return prev_val;
 }
 
-// void GetNodeOP(char* s, int* pos, node_t* val, node_t* prev_val)
-// {
-//     // node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
-//     // node_t* prev_val = nullptr;
 
-//     SkipSpace(s, pos);
-
-//     if (s[*pos] == 'i' && s[(*pos) + 1] == 'f')
-//     {
-//         (*pos) += 2;
-//         SkipSpace(s, pos);
-//         // if (s[*pos] == '{')
-//         // {}
-//         val->right = GetNodeIF(s, pos);
-//     }
-
-//     else
-//         val->right = GetNodeA(s, pos);
-
-//     (*pos)++;
-//     prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
-//     prev_val = val;
-//     val = NewOpNode((char*)COMB, prev_val, nullptr);
-
-//     SkipSpace(s, pos);
-//     // return prev_val;
-// }
-
-node_t* GetNodeN(char* s, int* pos)
+node_t* GetNodeN(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
     int val = 0;
     // printf("n:%c\n", s[*pos]);
 
-    if ('0' >= s[*pos] && s[*pos] >= '9')
+    // printf("*[%d]", tokens[(*pos)].type);
+    if (tokens[*pos].type != NUM)
         SyntaxError();
 
-    while ('0' <= s[*pos] && s[*pos] <= '9')
-    {
-        val = val * 10 + s[*pos] - '0';
-        (*pos)++;
-    }
-
-    return NewNumNode(val, NULL, NULL);
+    (*pos)++;//??
+    return tokens + (*pos) - 1;
 }
 
-node_t* GetNodeE(char* s, int* pos)
+node_t* GetNodeE(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
+    node_t* val = GetNodeT(tokens, pos);
 
-    node_t* val = GetNodeT(s, pos);
-    while (s[*pos] == '+' || s[*pos] == '-')
+    while (tokens[*pos].type == PLUS || tokens[*pos].type == MINUS)
     {
         int prev_pos = *pos;
         (*pos)++;
-        node_t* val2 = GetNodeT(s, pos);
-        if (s[prev_pos] == '+')
-            val = NewOpNode((char*)ADD, val, val2);
-        else
-            val = NewOpNode((char*)SUB, val, val2);
+        node_t* val2 = GetNodeT(tokens, pos);
+        (tokens + prev_pos)->left = val;
+        (tokens + prev_pos)->right = val2;
+        val = tokens + prev_pos;
     }
     return val;
 }
 
-node_t* GetNodeT(char* s, int* pos)
+node_t* GetNodeT(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
-
-    node_t* val = GetNodeP(s, pos);
-    while (s[*pos] == '*' || s[*pos] == '/')
+    node_t* val = GetNodeP(tokens, pos);
+    while (tokens[*pos].type == MULT || tokens[*pos].type == DIVN)
     {
         int prev_pos = *pos;
         (*pos)++;
-        node_t* val2 = GetNodeP(s, pos);
-        if (s[prev_pos] == '*')
-            val = NewOpNode((char*)MUL, val, val2);
-        else
-            val = NewOpNode((char*)DIV, val, val2);
+        node_t* val2 = GetNodeP(tokens, pos);
+        (tokens + prev_pos)->left = val;
+        (tokens + prev_pos)->right = val2;
+        val = tokens + prev_pos;
     }
     return val;
 }
 
-node_t* GetNodeP(char* s, int* pos)
+node_t* GetNodeP(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
-    // printf("p:%c\n", s[*pos]);
+    // printf("&%d&\n", tokens[*pos].type);
 
-    if (s[*pos] == '(')
+    if (tokens[*pos].type == BRACKET_OPEN)
     {
         (*pos)++;
-        node_t* val = GetNodeE(s, pos);
-        (*pos)++;
+        node_t* val = GetNodeE(tokens, pos);
+        (*pos)++;//??
+        // printf("&%d&\n", tokens[*pos].type);
         return val;
     }
 
-    else if (s[*pos] <= 'z' && s[*pos] >= 'a')
-        return GetNodeV(s, pos);
+    else if (tokens[*pos].type == VAR || tokens[*pos].type == OP_FUNC)
+        return GetNodeV(tokens, pos);
 
     else
-        return GetNodeM(s, pos);
+        return GetNodeN(tokens, pos);
 }
 
-node_t* GetNodeM(char* s, int* pos)
+// node_t* GetNodeM(node_t* tokens, int* pos)
+// {
+//     assert(tokens != nullptr);
+//     assert(pos != nullptr);
+
+//     SkipSpace(s, pos);
+
+//     if (s[*pos] == '-')
+//     {
+//         (*pos)++;
+//         int val = GetNum(s, pos);
+//         return NewNumNode(val * (-1), nullptr, nullptr);
+//     }
+
+//     else
+//         return GetNodeN(s, pos);
+// }
+
+node_t* GetNodeV(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
-
-    if (s[*pos] == '-')
-    {
-        (*pos)++;
-        int val = GetNum(s, pos);
-        return NewNumNode(val * (-1), nullptr, nullptr);
-    }
-
-    else
-        return GetNodeN(s, pos);
-}
-
-node_t* GetNodeV(char* s, int* pos)
-{
-    assert(s != nullptr);
-    assert(pos != nullptr);
-
-    SkipSpace(s, pos);
-
-    char* buf = (char*)calloc(10, sizeof(char));
-    int i = 0;
-    buf[i] = s[*pos];
-    i++;
+    // printf("(%d) - %d\n", tokens[(*pos) - 1].type, tokens[(*pos)].type);
+    if (tokens[(*pos)].type == OP_FUNC)
+        return GetNodeF(tokens, pos);
+    
     (*pos)++;
 
-    while ((s[*pos] <= 'z' && s[*pos] >= 'a') || ('0' >= s[*pos] && s[*pos] >= '9'))
-    {
-        buf[i] = s[*pos];
-        i++;
-        (*pos)++;
-    }
-
-    int amount_of_func = sizeof(arr_of_const_func) / sizeof(arr_of_const_func[0]);
-    for (int j = 0; j < amount_of_func; j++)
-    {
-        if (!strncmp(buf, arr_of_const_func[j], 10))
-        {
-            return GetNodeF(s, pos, buf);
-        }
-    }
-    
-    return NewVarNode(buf, nullptr, nullptr);
+    return tokens + (*pos) - 1;
 }
 
-node_t* GetNodeF(char* s, int* pos, char* buf)
+node_t* GetNodeF(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
+    // printf("f: (%d)\n", tokens[(*pos)].type);
+    int fpos = (*pos);
 
-    return NewOpNode(buf, nullptr, GetNodeP(s, pos));
+    (*pos)++;
+    (tokens + fpos)->right = GetNodeP(tokens, pos);
+    return tokens + fpos;
 }
 
-node_t* GetNodeA(char* s, int* pos)
+node_t* GetNodeA(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    SkipSpace(s, pos);
-
-    node_t* node = GetNodeV(s, pos);
+    node_t* node = GetNodeV(tokens, pos);
     
-    SkipSpace(s, pos);
-    // printf("a: %c %d\n", s[*pos], *pos);
-    if (s[*pos] == '=')
+    if (tokens[*pos].type == OP_EQUAL)
     {
+        int prev_pos = *pos;
         (*pos)++;
-        return NewOpNode((char*)EQUAL, node, GetNodeE(s, pos));
+        (tokens + prev_pos)->left = node;
+        (tokens + prev_pos)->right = GetNodeE(tokens, pos);
+        return tokens + prev_pos;
     }
 
     return node;
 }
 
-node_t* GetNodeIF(char* s, int* pos)
+node_t* GetNodeIF(node_t* tokens, int* pos)
 {
-    assert(s != nullptr);
+    assert(tokens != nullptr);
     assert(pos != nullptr);
+    int if_pos = *pos;//??
+    (*pos)++;
 
-    SkipSpace(s, pos);
     node_t* new_node = nullptr;
 
-    if (s[*pos] == '(')
+    if (tokens[*pos].type == BRACKET_OPEN)
     {
-        new_node = GetNodeE(s, pos);
-        SkipSpace(s, pos);
+        new_node = GetNodeE(tokens, pos);
     }
 
     node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
     node_t* prev_val = nullptr;
 
-    if (s[*pos] != '{')
+    if (tokens[*pos].type != FBRACKET_OPEN)
     {
-        node_t* new_new_node = GetNodeA(s, pos);
-        return NewOpNode((char*)IF, new_node, new_new_node);
+        node_t* new_new_node = GetNodeA(tokens, pos);
+        (tokens + if_pos)->left = new_node;
+        (tokens + if_pos)->right = new_new_node;
+        return tokens + if_pos;
     }
 
-    SkipSpace(s, pos);
         
-    (*pos)++;
+    (*pos)++;//??closed??
     do
     {
-        SkipSpace(s, pos);
+        val->right = GetNodeA(tokens, pos);
 
-        val->right = GetNodeA(s, pos);
-
-        if (s[*pos] != '}')
+        if (tokens[*pos].type != FBRACKET_CLOSE)
             (*pos)++;
-            // printf(",%c,", s[*pos]);
+
         prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
         prev_val = val;
         val = NewOpNode((char*)COMB, prev_val, nullptr);
 
-        SkipSpace(s, pos);
+    } while (tokens[*pos].type != FBRACKET_CLOSE);
 
-    } while (s[*pos] != '}');
-
-    return NewOpNode((char*)IF, new_node, prev_val);///
+    (tokens + if_pos)->left = new_node;
+    (tokens + if_pos)->right = prev_val;
+    return tokens + if_pos;
 
 }
 
-// node_t* GetNodeIF(char* s, int* pos)
-// {
-//     assert(s != nullptr);
-//     assert(pos != nullptr);
-
-//     SkipSpace(s, pos);
-
-//     // node_t* node = NewOpNode((char*)IF, nullptr, nullptr);
-
-//     node_t* val1 = NewOpNode((char*)COMB, nullptr, nullptr);
-//     node_t* prev_val1 = nullptr;
-//     node_t* new_node = nullptr;
-
-//     if (s[*pos] == '(')
-//     {
-//         new_node = GetNodeE(s, pos);
-//             printf("%c", s[*pos]);
-
-//         SkipSpace(s, pos);
-//     }
-//         // if (s[*pos] == '{')
-
-//         // int len_of_and = strlen(AND), counter = 0;
-//         // do{
-//         // for (int i = 0; i < len_of_and; i++)
-//         // {
-//         //     if (s[(*pos) + i] == AND[i])
-//         //         counter++;
-//         //     else
-//         //         break;
-//         // }
-
-//         // if (counter == len_of_and)//
-//         // {
-//         //     (*pos) += len_of_and;
-//         //     SkipSpace(s, pos);
-//         //     val1->right = GetNodeE(s, pos);
-
-//         //     SkipSpace(s, pos);
-
-//         //     // val->right = GetNodeA(s, pos);
-
-//         //     if (s[*pos] != ')')
-//         //         (*pos)++;
-//         //     // printf(",%c,", s[*pos]);
-//         //     prev_val1 = NewOpNode((char*)AND, nullptr, nullptr);
-//         //     prev_val1 = val1;
-//         //     val1 = NewOpNode((char*)AND, prev_val1, nullptr);
-
-//         //     SkipSpace(s, pos);
-//         // }
-
-//         // else
-//         // {
-//         //     SkipSpace(s, pos);
-//         //     printf("%c", s[*pos]);
-
-//         //     val1->right = GetNodeE(s, pos);
-//         //     // (*pos)++;
-//             // printf("%c", s[*pos]);
-//         //     SkipSpace(s, pos);
-//         //     break;
-//         // }
-
-//             // printf("%c", s[*pos]);
-
-//         // } while (s[*pos] != ')');
-//         //     printf("%c", s[*pos]);
-
-//         (*pos)++;
-//         SkipSpace(s, pos);
-
-//         node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
-//         node_t* prev_val = nullptr;
-
-//         if (s[*pos] != '{')
-//             {
-//                 // (*pos)++;
-//                 node_t* new_new_node = GetNodeA(s, pos);
-//                 return NewOpNode((char*)IF, new_node, new_new_node);
-//             }
-
-//         SkipSpace(s, pos);
-        
-//         (*pos)++;
-//         do
-//         {
-//             SkipSpace(s, pos);
-
-//             val->right = GetNodeA(s, pos);
-
-//             if (s[*pos] != '}')
-//                 (*pos)++;
-//             // printf(",%c,", s[*pos]);
-//             prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
-//             prev_val = val;
-//             val = NewOpNode((char*)COMB, prev_val, nullptr);
-
-//             SkipSpace(s, pos);
-
-//         } while (s[*pos] != '}');
-
-//         // // node_t* new_new_node = GetNodeA(s, pos);
-
-//         // return NewOpNode((char*)"{}", new_node, NewOpNode((char*)IF, new_node, );
-//         return NewOpNode((char*)IF, new_node, prev_val);///
-    
-//     return nullptr;
-// }
-
-// node_t* GetNodeIF(char* s, int* pos)
-// {
-//     assert(s != nullptr);
-//     assert(pos != nullptr);
-    
-//     SkipSpace(s, pos);
-
-//     if (s[*pos] == '(')
-//     {
-//         int val = GetE(s, pos);
-//         (*pos)++;
-
-//         SkipSpace(s, pos);
-
-//         if (val)
-//             return GetNodeA(s, pos);
-//     }
-//     return nullptr;
-// }
 
 node_t* MakeNode()
 {
@@ -443,7 +251,7 @@ node_t* NewOpNode(char* operation, node_t* left_node, node_t* right_node)
     node_t* new_node = MakeNode();
     new_node->type = OP;
 
-    if (!strncmp((char*)";", operation, MAX_LEN_OF_OPERATION))
+    if (!strncmp((char*)COMB, operation, MAX_LEN_OF_OPERATION))
         new_node->type = UOP;
 
     (new_node->value).op_name = operation;

@@ -4,10 +4,13 @@ node_t* ConstantOptimization(node_t* node)
 {
     assert(node != nullptr);
 
+    // printf("\nstart tree optimisation\n");
     int amount_of_nodes = 0, new_amount_of_nodes = 0;
     FindAmountOfNodes(&amount_of_nodes, node);
+    // printf("%d\n", amount_of_nodes);
     while (amount_of_nodes != new_amount_of_nodes)
     {
+        // printf("q");
         amount_of_nodes = new_amount_of_nodes;
         new_amount_of_nodes = 0;
         BodyOfConstantOptimisation(node);
@@ -25,18 +28,20 @@ node_t* BodyOfConstantOptimisation(node_t* node)
 
     if (node->left && node->right && LEFT_TYPE == NUM && RIGHT_TYPE == NUM)
     {
+        // printf("\nfirst if\n");
         for (int i = 0; i < amount_of_operations; i++)
         {
-            if (!strncmp(arr_of_op_for_optimisation[i].op_name, (node->value).op_name, MAX_LEN_OF_OPERATION))
+            if (arr_of_op_for_optimisation[i].op_name == node->type)
             {
                 (node->value).op_num = (arr_of_op_for_optimisation[i].ptr)(LEFT_NUM, RIGHT_NUM);
+                // printf("%d\n", (node->value).op_num);
                 break;
             }
         }
 
         node->type = NUM; 
-        free(node->left);
-        free(node->right);
+        // free(node->left);//что ж делать чтож делать..
+        // free(node->right);
         node->left = nullptr;
         node->right = nullptr;
     }

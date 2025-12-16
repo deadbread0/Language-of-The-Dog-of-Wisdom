@@ -22,4 +22,4 @@ int SubNum(int num1, int num2);
 int DivNum(int num1, int num2);
 int DegNum(int num1, int num2);
 
-static operation_opt_t arr_of_op_for_optimisation[] = {{(char*)ADD, AddNum}, {(char*)MUL, MulNum}, {(char*)SUB, SubNum}, {(char*)DIV, DivNum}, {(char*)DEG, DegNum}};
+static operation_opt_t arr_of_op_for_optimisation[] = {{PLUS, AddNum}, {MULT, MulNum}, {MINUS, SubNum}, {DIVN, DivNum}, {DEGREE, DegNum}};
