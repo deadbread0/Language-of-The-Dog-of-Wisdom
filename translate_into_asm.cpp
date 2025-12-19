@@ -1,13 +1,20 @@
 #include "headers/translate_into_asm.h"
 #include <ctype.h>
 
-
 void TranslateIntoAsm(node_t* node, FILE* file_asm, names_t* nametable)
 {
+    int num_of_labels = 0;
+    int num_of_nametable = 0;//??
+    TranslateIntoAsmBody(node, file_asm, nametable, &num_of_labels, &num_of_nametable);
+    fprintf(file_asm, "hlt\n");
+}
+
+void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int* num_of_labels, int* num_of_nametable)
+{
     if (node->left)
-        TranslateIntoAsm(node->left, file_asm, nametable);
+        TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable);
     if (node->right)
-        TranslateIntoAsm(node->right, file_asm, nametable);
+        TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable);
     if (node->type == NUM)
     {
         fprintf(file_asm, "push %lg\n", node->value.op_num, nametable);
@@ -15,23 +22,24 @@ void TranslateIntoAsm(node_t* node, FILE* file_asm, names_t* nametable)
 
     else if (node->type == VAR)
     {
-        int i = nametable->last_i;//последняя свободная ячейка
-        (nametable + i)->var = node->value.op_name;
-        (nametable + i)->num = i;
+        // int i = nametable->last_i;//последняя свободная ячейка теперь это num_of_nametable
+        (nametable + *num_of_nametable)->var = node->value.op_name;
+        (nametable + *num_of_nametable)->num_of_name = *num_of_nametable;
 
-        for (int j = 0; j < i; j++)
+        for (int j = 0; j < *num_of_nametable; j++)
         {
             int pos = 0;
             if (CompareWords(node->value.op_name, &pos, (nametable + j)->var))
             {
-                (nametable + i)->num = (nametable + j)->num;
+                (nametable + *num_of_nametable)->num_of_name = (nametable + j)->num_of_name;
                 break;
             }
         }
 
-        fprintf(file_asm, "push %d\n", (nametable + i)->num);
-        fprintf(file_asm, "pushm %d\n", (nametable + i)->num);
-        nametable->last_i++;
+        fprintf(file_asm, "push %d\n", (nametable + *num_of_nametable)->num_of_name);
+        fprintf(file_asm, "pushm %d\n", (nametable + *num_of_nametable)->num_of_name);
+        // nametable->last_i++;
+        (*num_of_nametable)++;
     }
 
     else if (node->type == MINUS)
@@ -53,6 +61,24 @@ void TranslateIntoAsm(node_t* node, FILE* file_asm, names_t* nametable)
     {
         fprintf(file_asm, "mul\n");
     }
+
+    else if (node->type == OP_PRINTF)
+    {
+        fprintf(file_asm, "out\n");
+    }
+
+    // else if (node->type == OP_IF)
+    // {
+    //     fprintf(file_asm, "push 0\n");
+    //     fprintf(file_asm, ":%d\n", *num_of_labels);
+    //     TranslateIntoAsm(node->right, file_asm, nametable);
+    //     fprintf(file_asm, ":%d\n", *num_of_labels);
+    // }
+
+    // else if (node->type == OP_WHILE)
+    // {
+
+    // }
     
 }
 
@@ -62,6 +88,8 @@ node_t* FillTypesInTree(node_t* node)
         FillTypesInTree(node->left);
     if (node->right)
         FillTypesInTree(node->right);
+
+    int pos = 0;
 
     if (node->value.op_name[0] <= '9' && node->value.op_name[0] >= '0')
     {
@@ -107,6 +135,11 @@ node_t* FillTypesInTree(node_t* node)
     else if (node->value.op_name[0] == ';')
     {
         node->type = UOP;
+    }
+
+    else if (CompareWords(node->value.op_name, &pos, (char*)PRINTF))
+    {
+        node->type = OP_PRINTF;
     }
 
     else 
