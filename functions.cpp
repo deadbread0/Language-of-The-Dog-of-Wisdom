@@ -8,7 +8,6 @@ int GetAll(char* s, int* pos)
     SkipSpace(s, pos);
 
     int val = GetExpressionWithAddOrSub(s, pos);
-    // printf("g:%c, %d\n", s[*pos], *pos);
 
     if (s[*pos] != '$')
         SyntaxError();
@@ -24,7 +23,6 @@ int GetNum(char* s, int* pos)
     SkipSpace(s, pos);
 
     int val = 0;
-    // printf("n:%c\n", s[*pos]);
 
     if ('0' >= s[*pos] && s[*pos] >= '9')
         SyntaxError();
@@ -84,7 +82,6 @@ int GetExpressionInBrackets(char* s, int* pos)
 {
     assert(s != nullptr);
     assert(pos != nullptr);
-    // printf("p:%c\n", s[*pos]);
 
     SkipSpace(s, pos);
 
@@ -121,6 +118,11 @@ void SyntaxError()
 {
     printf("syntax error\n");
     exit(1);
+}
+
+void MemoryAllocationError()
+{
+    printf("Memory allocation error, try again pls\n");
 }
 
 void SkipSpace(char* s, int* pos)

@@ -1,7 +1,7 @@
 #include "headers/tree_functions.h"
 #include <cstring>
 
-node_t* GetNodeG(node_t* tokens, int* pos)///name
+node_t* GetNodeComb(node_t* tokens, int* pos)///name
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
@@ -24,50 +24,47 @@ node_t* GetNodeG(node_t* tokens, int* pos)///name
         prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
         prev_val = val;
         val = NewOpNode((char*)COMB, prev_val, nullptr);
-        // printf("!%d %d\n", *pos, prev_val);
 
         if (tokens[*pos].type == UOP)
             (*pos)++;
 
     } while (tokens[*pos].type != END);
 
-    // printf("^[%d]", tokens[(*pos)].type);
     if (tokens[*pos].type != END)
         SyntaxError();
+
     (*pos)++;
 
     return prev_val;
 }
 
 
-node_t* GetNodeN(node_t* tokens, int* pos)
+node_t* GetNodeNum(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
     int val = 0;
-    // printf("n:%c\n", s[*pos]);
 
-    // printf("*[%d]", tokens[(*pos)].type);
     if (tokens[*pos].type != NUM)
         SyntaxError();
 
-    (*pos)++;//??
+    (*pos)++;
     return tokens + (*pos) - 1;
 }
 
-node_t* GetNodeE(node_t* tokens, int* pos)
+node_t* GetNodeAddOrSub(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    node_t* val = GetNodeT(tokens, pos);
+    node_t* val = GetNodeMulOrDiv(tokens, pos);
 
     while (tokens[*pos].type == PLUS || tokens[*pos].type == MINUS)
     {
         int prev_pos = *pos;
         (*pos)++;
-        node_t* val2 = GetNodeT(tokens, pos);
+        node_t* val2 = GetNodeMulOrDiv(tokens, pos);
         (tokens + prev_pos)->left = val;
         (tokens + prev_pos)->right = val2;
         val = tokens + prev_pos;
@@ -75,17 +72,17 @@ node_t* GetNodeE(node_t* tokens, int* pos)
     return val;
 }
 
-node_t* GetNodeT(node_t* tokens, int* pos)
+node_t* GetNodeMulOrDiv(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    node_t* val = GetNodeP(tokens, pos);
+    node_t* val = GetNodeBracket(tokens, pos);
     while (tokens[*pos].type == MULT || tokens[*pos].type == DIVN)
     {
         int prev_pos = *pos;
         (*pos)++;
-        node_t* val2 = GetNodeP(tokens, pos);
+        node_t* val2 = GetNodeBracket(tokens, pos);
         (tokens + prev_pos)->left = val;
         (tokens + prev_pos)->right = val2;
         val = tokens + prev_pos;
@@ -93,27 +90,24 @@ node_t* GetNodeT(node_t* tokens, int* pos)
     return val;
 }
 
-node_t* GetNodeP(node_t* tokens, int* pos)
+node_t* GetNodeBracket(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    // printf("&%d&\n", tokens[*pos].type);
-
     if (tokens[*pos].type == BRACKET_OPEN)
     {
         (*pos)++;
-        node_t* val = GetNodeE(tokens, pos);
-        (*pos)++;//??
-        // printf("&%d&\n", tokens[*pos].type);
+        node_t* val = GetNodeAddOrSub(tokens, pos);
+        (*pos)++;
         return val;
     }
 
     else if (tokens[*pos].type == VAR || tokens[*pos].type == OP_FUNC)
-        return GetNodeV(tokens, pos);
+        return GetNodeVar(tokens, pos);
 
     else
-        return GetNodeN(tokens, pos);
+        return GetNodeNum(tokens, pos);
 }
 
 // node_t* GetNodeM(node_t* tokens, int* pos)
@@ -131,33 +125,31 @@ node_t* GetNodeP(node_t* tokens, int* pos)
 //     }
 
 //     else
-//         return GetNodeN(s, pos);
+//         return GetNodeNum(s, pos);
 // }
 
-node_t* GetNodeV(node_t* tokens, int* pos)
+node_t* GetNodeVar(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    // printf("(%d) - %d\n", tokens[(*pos) - 1].type, tokens[(*pos)].type);
     if (tokens[(*pos)].type == OP_FUNC)
-        return GetNodeF(tokens, pos);
+        return GetNodeFunction(tokens, pos);
     
     (*pos)++;
 
     return tokens + (*pos) - 1;
 }
 
-node_t* GetNodeF(node_t* tokens, int* pos)
+node_t* GetNodeFunction(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    // printf("f: (%d)\n", tokens[(*pos)].type);
     int fpos = (*pos);
 
     (*pos)++;
-    (tokens + fpos)->right = GetNodeP(tokens, pos);
+    (tokens + fpos)->right = GetNodeBracket(tokens, pos);
     return tokens + fpos;
 }
 
@@ -166,14 +158,14 @@ node_t* GetNodeA(node_t* tokens, int* pos)
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    node_t* node = GetNodeV(tokens, pos);
+    node_t* node = GetNodeVar(tokens, pos);
     
     if (tokens[*pos].type == OP_EQUAL)
     {
         int prev_pos = *pos;
         (*pos)++;
         (tokens + prev_pos)->left = node;
-        (tokens + prev_pos)->right = GetNodeE(tokens, pos);
+        (tokens + prev_pos)->right = GetNodeAddOrSub(tokens, pos);
         return tokens + prev_pos;
     }
 
@@ -184,14 +176,14 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
-    int if_pos = *pos;//??
+    int if_pos = *pos;
     (*pos)++;
 
     node_t* new_node = nullptr;
 
     if (tokens[*pos].type == BRACKET_OPEN)
     {
-        new_node = GetNodeE(tokens, pos);
+        new_node = GetNodeAddOrSub(tokens, pos);
     }
 
     node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
@@ -205,8 +197,8 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
         return tokens + if_pos;
     }
 
-        
-    (*pos)++;//??closed??
+    (*pos)++;
+
     do
     {
         val->right = GetNodeA(tokens, pos);
@@ -233,7 +225,7 @@ node_t* MakeNode()
 
     if (!new_node)
     {
-        printf("memory allocation error, try again\n");
+        MemoryAllocationError();
         return nullptr;
     }
 

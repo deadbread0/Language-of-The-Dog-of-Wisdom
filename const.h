@@ -23,9 +23,10 @@ static const char* DEG = "^";//
 static const char* EQUAL = "=";
 static const char* COMB = ";";
 static const char* IF = "ha";
-static const char* WHILE = "Hawawaw";
+static const char* WHILE = "hawawaw";
 static const char* OR = "or";//
 static const char* AND = "and";//
-static const char* PRINTF = "Hadebadega";
+static const char* PRINTF = "hadebadega";
+static const char* NILNIL = "nil nil ";
 
 static const char* arr_of_const_func[] = {SIN, COS, TG, CTG, LN, PRINTF};

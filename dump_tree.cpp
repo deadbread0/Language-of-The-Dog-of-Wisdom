@@ -4,11 +4,9 @@ void DumpTree(node_t* node, FILE* filee)
 {
     assert(node != nullptr);
     assert(filee != nullptr);
-    // printf("start dump");
 
     fprintf(filee, "digraph {\nrankdir=HR;\n");
     int n = 0;
-    // printf("%d", node->type);
     DumpGraphNode(node, filee, &n);
     MakeCommunicationBetweenNodes(node, filee);
     fprintf(filee, "}\n");
@@ -21,19 +19,15 @@ void DumpGraphNode(node_t* node, FILE* filee, int* n)
     assert(node != nullptr);
     assert(filee != nullptr);
 
-    // printf("%d", node->type);
     if (node->left)
     {
-        // printf("\n%d - %d - %d\n", node, node->left, node->right);
         DumpGraphNode(node->left, filee, n);
     }
     if (node->right)
     {
-        // printf("\n%d - %d - %d\n", node, node->left, node->right);
         DumpGraphNode(node->right, filee, n);
     }
 
-    // printf("%d", node->type);
     switch (node->type)
     {
         case OP: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;

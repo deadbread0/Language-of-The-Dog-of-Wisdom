@@ -1,6 +1,9 @@
 #ifndef FOR_TYPES
 #include "types.h"
 #endif
+#ifndef FOR_CONST
+#include "const.h"
+#endif
 #include <assert.h>
 #include "tree_functions.h"
 void PutTreeInFile(node_t* node, FILE* filee);

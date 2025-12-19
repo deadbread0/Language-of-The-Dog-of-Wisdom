@@ -6,13 +6,14 @@ void PutTreeInFile(node_t* node, FILE* filee)
     assert(filee != nullptr);
 
     fprintf(filee, "(");
+
     if (node->type == NUM)
         fprintf(filee, " \"%lg\" ", node->value.op_num);
     else
         fprintf(filee, " \"%s\" ", node->value.op_name);
 
     if (!node->left && !node->right)
-        fprintf(filee, "nil nil ");//const nil nil
+        fprintf(filee, NILNIL);
         
     if (node->left)
         PutTreeInFile(node->left, filee);
@@ -27,8 +28,6 @@ node_t* ReadNode(int* pos, char* buffer)
 {
     assert(pos != nullptr);
     assert(buffer != nullptr);
-    // assert(error != nullptr);
-    
 
     if (buffer[*pos] == ' ')
         (*pos)++;
@@ -51,8 +50,6 @@ node_t* ReadNode(int* pos, char* buffer)
             (*pos)++;
 
         (*pos)++;
-        // printf("\n,%c,\n", buffer[*pos]);
-        // printf("\n%d\n", *pos);
 
         return new_node;
     }
@@ -70,8 +67,8 @@ char* ReturnDataOfNode(int* pos, char* buffer)
 
     char* node_data = (char*)calloc(MAX_LEN_OF_OPERATION, sizeof(char));
 
-    // if (!node_data)
-    //     *error = MEMORY_ALLOCATION;
+    if (!node_data)
+        MemoryAllocationError();
 
     int i = 0;
 
@@ -81,7 +78,6 @@ char* ReturnDataOfNode(int* pos, char* buffer)
         i++;
         (*pos)++;
     }
-    // printf("\n|%s|\n", node_data);
 
     (*pos)++;
     return node_data;

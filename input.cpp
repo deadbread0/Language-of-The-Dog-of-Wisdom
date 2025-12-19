@@ -2,19 +2,17 @@
 
 char* PutDataFromFileToBuffer()
 {
-    char* input_file = (char*)"files/input_file.txt";
-    int size = GetSizeOfInputFile(input_file);
-    // printf("size: %d\n", size);
+    int size = GetSizeOfInputFile(input_file_path);
 
     char* buffer = (char*)calloc(size + 1, sizeof(char));
 
     if (!buffer)
     {
-        printf("memory allocation error, try again\n");
+        MemoryAllocationError();
         return nullptr;
     }
 
-    FILE* filee = fopen(input_file, "r");
+    FILE* filee = fopen(input_file_path, "r");
     fread(buffer, sizeof(char), size + 1, filee);
 
     if (!buffer)

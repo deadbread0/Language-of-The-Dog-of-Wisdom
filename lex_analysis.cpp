@@ -7,8 +7,6 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
 
     while (s[*pos] != '\0')
     {
-        // printf(",%c,", s[*pos]);
-
         if (CompareWords(s, pos, (char*)"/*"))
         {
             while (!CompareWords(s, pos, (char*)"*/"))
@@ -91,12 +89,14 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
                 (*pos)++;
                 continue;
             }
+
             (*pos)--;
+
             while (isspace(s[*pos]))
             {
                 (*pos)--;
             } 
-            // printf("#%c#", s[*pos]);
+
             tokens[n].type = OP_EQUAL;
             (tokens + n)->value.op_name = (char*)"=";
             n++;
@@ -115,13 +115,10 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
                 (*pos)++;
             }
 
-            // printf("")
             tokens[n].type = NUM;
-            // printf("||%d||", num);
             (tokens + n)->value.op_num = num;///
             n++;
 
-            // (*pos)++;
             continue;
         }
 
@@ -171,12 +168,11 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
         }
 
         int amount_of_const_func = sizeof(arr_of_const_func) / sizeof(arr_of_const_func[0]);
+
         for (int i = 0; i < amount_of_const_func; i++)
         {
-            // printf("@");
             if (CompareWords(s, pos, (char*)arr_of_const_func[i]))
             {
-                // printf("~%c~", s[*pos]);
                 (tokens + n)->type = OP_FUNC;
                 (tokens + n)->value.op_name = (char*)arr_of_const_func[i];
                 n++;
@@ -187,12 +183,11 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
 
         if (isalnum(s[*pos]))
         {
-            // printf("*");
             char* arr = (char*)calloc(MAX_LEN_OF_OPERATION, sizeof(char));
             int j = 0;
+
             while (isalnum(s[*pos]))
             {
-                // printf("<%c>", arr[j]);
                 arr[j] = s[*pos];
                 j++;
                 (*pos)++;
@@ -200,6 +195,7 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             (tokens + n)->type = VAR;
 
             int c = 0;
+
             if (isspace(s[(*pos) + c]))
             {
                 while (isspace(s[(*pos) + c]))
@@ -207,6 +203,7 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
                     c++;
                 }
             }
+
             if (s[(*pos) + c] == '(')
                 (tokens + n)->type = OP_FUNC;
 
@@ -214,8 +211,6 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             n++;
             continue;
         }
-
-        // printf("_%s_", tokens[n-1].value) ;
         
         if (s[*pos] == '$')
         {

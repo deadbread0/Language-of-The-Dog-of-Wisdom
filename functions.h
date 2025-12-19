@@ -11,3 +11,4 @@ int GetNumBelowZero(char* s, int* pos);
 
 void SyntaxError();
 void SkipSpace(char* s, int* pos);
+void MemoryAllocationError();
