@@ -14,17 +14,18 @@ static const char* ADD = "+";
 static const char* MUL = "*";
 static const char* SUB = "-";
 static const char* DIV = "/";
-static const char* SIN = "sin";
-static const char* COS = "cos";
-static const char* TG = "tg";
-static const char* CTG = "ctg";
+static const char* SIN = "haswaiwana";
+static const char* COS = "hacwaowasa";
+static const char* TG = "hatwaga";
+static const char* CTG = "hacwatwaga";
 static const char* LN = "ln";
 static const char* DEG = "^";//
 static const char* EQUAL = "=";
 static const char* COMB = ";";
-static const char* IF = "if";
-static const char* WHILE = "while";
+static const char* IF = "ha";
+static const char* WHILE = "Hawawaw";
 static const char* OR = "or";//
 static const char* AND = "and";//
+static const char* PRINTF = "Hadebadega";
 
-static const char* arr_of_const_func[] = {SIN, COS, TG, CTG, LN};
+static const char* arr_of_const_func[] = {SIN, COS, TG, CTG, LN, PRINTF};

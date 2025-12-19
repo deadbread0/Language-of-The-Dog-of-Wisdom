@@ -22,7 +22,8 @@ enum typee
     OP_FUNC,
     OP_WHILE,
     DEGREE,
-    COMP
+    COMP,
+    OP_PRINTF
 };
 
 struct typee_t
@@ -39,9 +40,9 @@ union operation_t
 
 struct names_t
 {
-    int num;
+    int num_of_name;
     char* var;
-    int last_i;
+    int value;
 };
 
 struct node_t

@@ -49,6 +49,7 @@ void DumpGraphNode(node_t* node, FILE* filee, int* n)
         case MULT: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
         case DIVN: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
         case OP_FUNC: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
+        case OP_PRINTF: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
     }
 }
 
