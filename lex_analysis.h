@@ -17,6 +17,7 @@ static const char* SIN = "haswaiwana";
 static const char* COS = "hacwaowasa";
 static const char* TG = "hatwaga";
 static const char* CTG = "hacwatwaga";
+static const char* MAIN = "hagaga";
 static const char* LN = "ln";
 static const char* arr_of_const_func[] = {SIN, COS, TG, CTG, LN, PRINTF};
 #define LEX

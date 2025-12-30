@@ -65,20 +65,6 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
 
-        if (CompareWords(s, pos, (char*)IF))
-        {
-            (*pos)--;
-            while (isspace(s[*pos]))
-            {
-                (*pos)--;
-            } 
-            tokens[n].type = OP_IF;
-            (tokens + n)->value.op_name = (char*)IF;
-            n++;
-            (*pos)++;
-            continue;
-        }
-
         if (CompareWords(s, pos, (char*)WHILE))
         {
             (*pos)--;
@@ -88,6 +74,20 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             } 
             tokens[n].type = OP_WHILE;
             (tokens + n)->value.op_name = (char*)WHILE;
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (CompareWords(s, pos, (char*)IF))
+        {
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            tokens[n].type = OP_IF;
+            (tokens + n)->value.op_name = (char*)IF;
             n++;
             (*pos)++;
             continue;

@@ -12,6 +12,7 @@ node_t* GetNodeComb(node_t* tokens, int* pos)///name
 
     do
     {
+        // printf("%d\n", tokens[*pos].type);
         if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
         {
             val->right = GetNodeIF(tokens, pos);
@@ -179,6 +180,7 @@ node_t* GetNodeA(node_t* tokens, int* pos)
 
 node_t* GetNodeIF(node_t* tokens, int* pos)
 {
+    printf("%d\n", *pos);
     assert(tokens != nullptr);
     assert(pos != nullptr);
     int if_pos = *pos;
@@ -186,6 +188,7 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
 
     node_t* new_node = nullptr;
 
+    // printf("%s\n", tokens[*pos].value.op_name);
     if (tokens[*pos].type == BRACKET_OPEN)
     {
         new_node = GetNodeAddOrSub(tokens, pos);
@@ -208,7 +211,11 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
 
     do
     {
-        val->right = GetNodeA(tokens, pos);
+        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
+            val->right = GetNodeIF(tokens, pos);
+            
+        else
+            val->right = GetNodeA(tokens, pos);
 
         if (tokens[*pos].type != FBRACKET_CLOSE)
             (*pos)++;

@@ -12,21 +12,51 @@ void TranslateIntoAsm(node_t* node, FILE* file_asm, names_t* nametable)
 
 void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int* num_of_labels, int* num_of_nametable, int* counter_of_commands)
 {
-    // if (node->left)
-    //     TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable);
-
     if (node->type == OP_IF)
     {
-        // printf("666");
         TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands);
+
         int new_counter = 0;
         CountAmountOfSteps(node, &new_counter);
+
         fprintf(file_asm, "push 0\nje %d\n", new_counter + *counter_of_commands + 2);///???
+        (*counter_of_commands) += 4;
+
         TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands);
+
         fprintf(file_asm, ":%d\n", *num_of_labels);
         (*num_of_labels)++;
-        return;
+        (*counter_of_commands) += 2;
 
+        return;
+    }
+
+    if (node->type == OP_WHILE)
+    {
+        int new_counter = 0;
+        CountAmountOfSteps(node, &new_counter);
+
+        int first_jump = new_counter + *counter_of_commands + 1;
+        (*counter_of_commands) += 4;
+
+        TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands);
+
+        fprintf(file_asm, "push 0\nje %d\n", new_counter + *counter_of_commands - 1);///???
+        int second_jump = *counter_of_commands;
+        fprintf(file_asm, ":%d\n", *num_of_labels);
+        (*num_of_labels)++;
+        
+        TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands);
+        TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands);
+
+        fprintf(file_asm, "push 0\njne %d\n", second_jump);
+        (*counter_of_commands) += 4;
+
+        fprintf(file_asm, ":%d\n", *num_of_labels);
+        (*num_of_labels)++;
+        (*counter_of_commands) += 4;
+
+        return;
     }
     
     if (node->type == OP_EQUAL && node->left->type == VAR)
@@ -55,7 +85,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
         TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands);
     if (node->type == NUM)
     {
-        printf("%x\n", node);
+        // printf("%x\n", node);
         fprintf(file_asm, "push %lg\n", node->value.op_num);
         (*counter_of_commands) += 2;
 
@@ -78,8 +108,11 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
             }
         }
 
+        // printf("%d %d\n", node->left, node->right);
         fprintf(file_asm, "pushm %d\n", index);
         (*counter_of_commands) += 2;
+        return;
+        // printf("%d\n", index);
 
     }
 
@@ -87,13 +120,15 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
     {
         fprintf(file_asm, "sub\n");
         (*counter_of_commands)++;
+        return;
 
     }
 
-    else if (node->type == PLUS)
+    if (node->type == PLUS)
     {
         fprintf(file_asm, "add\n");
         (*counter_of_commands)++;
+        return;
 
     }
 
@@ -117,20 +152,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
         (*counter_of_commands)++;
 
     }
-
-    // else if (node->type == OP_IF)
-    // {
-    //     fprintf(file_asm, "push 0\n");
-    //     fprintf(file_asm, ":%d\n", *num_of_labels);
-    //     TranslateIntoAsm(node->right, file_asm, nametable);
-    //     fprintf(file_asm, ":%d\n", *num_of_labels);
-    // }
-
-    // else if (node->type == OP_WHILE)
-    // {
-
-    // }
-    
+    return;
 }
 
 node_t* FillTypesInTree(node_t* node)
@@ -211,6 +233,11 @@ node_t* FillTypesInTree(node_t* node)
         node->type = UOP;
     }
 
+    else if (CompareWords(node->value.op_name, &pos, (char*)WHILE))
+    {
+        node->type = OP_WHILE;
+    }
+
     else if (CompareWords(node->value.op_name, &pos, (char*)PRINTF))
     {
         node->type = OP_PRINTF;
@@ -220,6 +247,8 @@ node_t* FillTypesInTree(node_t* node)
     {
         node->type = OP_IF;
     }
+
+
 
     else 
     {
@@ -276,8 +305,17 @@ void CountAmountOfSteps(node_t* node, int* counter)
     {
         CountAmountOfSteps(node->right, counter);
         (*counter) += 2;
-        return;
     }
+
+    // if (node->type == OP_WHILE)
+    // {
+    //     (*counter) += 12;
+    // }
+
+    // if (node->type == OP_IF)
+    // {
+    //     (*counter) += 6;
+    // }
 
     if (node->left)
         CountAmountOfSteps(node->left, counter);

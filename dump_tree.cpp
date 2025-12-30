@@ -18,6 +18,7 @@ void DumpGraphNode(node_t* node, FILE* filee, int* n)
 {
     assert(node != nullptr);
     assert(filee != nullptr);
+    // printf("%d\n", node->type);
 
     if (node->left)
     {

@@ -23,7 +23,8 @@ enum typee
     OP_WHILE,
     DEGREE,
     COMP,
-    OP_PRINTF
+    OP_PRINTF,
+    MAIN_FUNC
 };
 
 struct typee_t
