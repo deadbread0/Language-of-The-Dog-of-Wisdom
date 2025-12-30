@@ -51,6 +51,20 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
 
+        if (CompareWords(s, pos, (char*)PRINTF))
+        {
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            tokens[n].type = OP_PRINTF;
+            (tokens + n)->value.op_name = (char*)PRINTF;
+            n++;
+            (*pos)++;
+            continue;
+        }
+
         if (CompareWords(s, pos, (char*)IF))
         {
             (*pos)--;

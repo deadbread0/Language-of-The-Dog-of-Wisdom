@@ -1,14 +1,20 @@
 #ifndef FOR_TYPES
 #include "types.h"
 #endif
-// #include "const.h"
 #include <assert.h>
 #ifndef LEX
 #include "lex_analysis.h"
 #endif
 #include "functions.h"
+#ifndef TREE_F
+static const char* COMB = ";";
+#define TREE_F
+#endif
 
-
+#ifndef MAX_LEN_OP
+static const int MAX_LEN_OF_OPERATION = 10;
+#define MAX_LEN_OP
+#endif
 
 node_t* GetNodeComb(node_t* tokens, int* pos);
 node_t* GetNodeNum(node_t* tokens, int* pos);

@@ -1,17 +1,14 @@
-#include "C:\Users\kirak\c+-\headers\types.h"
-#include "C:\Users\kirak\c+-\headers\input.h"
-#include "C:\Users\kirak\c+-\headers\tree_optimisation.h"
-#include "C:\Users\kirak\c+-\headers\translate_into_asm.h"
-#include "C:\Users\kirak\c+-\headers\put_in_file.h"
-#include "C:\Users\kirak\c+-\headers\dump_tree.h"
+
+#include "C:\Users\kirak\c+-\headers\middlend.h"
 
 int main()
 {
     int new_size = GetSizeOfInputFile(tree_path);
     char* buf = PutTreeFromFileToBuffer(new_size);
     int pos = 0;
-    node_t* new_tree = ReadNode(&pos, buf);//чзх
+    node_t* new_tree = ReadNode(&pos, buf);
     new_tree = ConstantOptimization(FillTypesInTree(new_tree));
+
     FILE* new_output_file = fopen(new_tree_dump_path, "w");
     DumpTree(new_tree, new_output_file);
     fclose(new_output_file);

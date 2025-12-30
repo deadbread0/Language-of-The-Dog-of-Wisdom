@@ -1,6 +1,6 @@
 #include "headers/functions.h"
 
-int GetAll(char* s, int* pos)
+int GetCode(char* s, int* pos)
 {
     assert(s != nullptr);
     assert(pos != nullptr);
@@ -132,4 +132,42 @@ void SkipSpace(char* s, int* pos)
 
     while (s[*pos] == ' ' || s[*pos] == '\n')
         (*pos)++;
+}
+
+void FillNametable(names_t* nametable, node_t* node, int* last_index_in_nametable)
+{
+    // if (node->type == OP_EQUAL && node->left->type == VAR)
+    // {
+        
+    // }
+
+    if (node->type == VAR)
+    {
+        int counter = 0;
+
+        for (int i = 0; i < *last_index_in_nametable; i++)
+        {
+            int p = 0;
+
+            if (CompareWords((nametable + i)->var, &p, node->value.op_name))
+            {
+                counter++;
+                break;
+            }
+        }
+
+        if (!counter)
+        {
+            (nametable + *last_index_in_nametable)->num_of_name = *last_index_in_nametable;
+            (nametable + *last_index_in_nametable)->var = node->value.op_name;
+            // (nametable + *last_index_in_nametable)->value = 
+            (*last_index_in_nametable)++;
+        }
+    }
+
+    if (node->left)
+        FillNametable(nametable, node->left, last_index_in_nametable);
+    if (node->right)
+        FillNametable(nametable, node->right, last_index_in_nametable);
+    
 }

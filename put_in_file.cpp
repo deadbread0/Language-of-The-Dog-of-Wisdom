@@ -13,7 +13,7 @@ void PutTreeInFile(node_t* node, FILE* filee)
         fprintf(filee, " \"%s\" ", node->value.op_name);
 
     if (!node->left && !node->right)
-        fprintf(filee, NILNIL);
+        fprintf(filee, "%s", NILNIL);
         
     if (node->left)
         PutTreeInFile(node->left, filee);

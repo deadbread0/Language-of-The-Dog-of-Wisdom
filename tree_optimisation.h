@@ -1,9 +1,6 @@
 #ifndef FOR_TYPES
 #include "types.h"
 #endif
-#ifndef FOR_CONST
-#include "const.h"
-#endif
 #include <assert.h>
 #include <cstring>
 #include <math.h>
@@ -11,6 +8,13 @@
 #define RIGHT_NUM ((node->right)->value).op_num
 #define LEFT_TYPE (node->left)->type
 #define RIGHT_TYPE (node->right)->type
+
+static const char* MUL = "*";
+
+#ifndef MAX_LEN_OP
+static const int MAX_LEN_OF_OPERATION = 10;
+#define MAX_LEN_OP
+#endif
 
 void FindAmountOfNodes(int* amount, node_t* node);
 node_t* ConstantOptimization(node_t* node);

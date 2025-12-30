@@ -17,6 +17,8 @@ node_t* GetNodeComb(node_t* tokens, int* pos)///name
             val->right = GetNodeIF(tokens, pos);
         }
 
+        // else if (tokens[*pos].type == OP_PRINTF ||)
+
         else
             val->right = GetNodeA(tokens, pos);
 
@@ -107,33 +109,36 @@ node_t* GetNodeBracket(node_t* tokens, int* pos)
         return GetNodeVar(tokens, pos);
 
     else
-        return GetNodeNum(tokens, pos);
+        return GetNodeM(tokens, pos);
 }
 
-// node_t* GetNodeM(node_t* tokens, int* pos)
-// {
-//     assert(tokens != nullptr);
-//     assert(pos != nullptr);
+node_t* GetNodeM(node_t* tokens, int* pos)
+{
+    assert(tokens != nullptr);
+    assert(pos != nullptr);
 
-//     SkipSpace(s, pos);
+    // SkipSpace(tos, pos);
 
-//     if (s[*pos] == '-')
-//     {
-//         (*pos)++;
-//         int val = GetNum(s, pos);
-//         return NewNumNode(val * (-1), nullptr, nullptr);
-//     }
+    if (tokens[*pos].type == MINUS)
+    {
+        (*pos)++;
+        // int val = GetNum(s, pos);
+        // return NewNumNode(val * (-1), nullptr, nullptr);
+        node_t* node = GetNodeNum(tokens, pos);
+        node->value.op_num = node->value.op_num * (-1);
+        return node;
+    }
 
-//     else
-//         return GetNodeNum(s, pos);
-// }
+    else
+        return GetNodeNum(tokens, pos);
+}
 
 node_t* GetNodeVar(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    if (tokens[(*pos)].type == OP_FUNC)
+    if (tokens[(*pos)].type == OP_FUNC || tokens[*pos].type == OP_PRINTF)
         return GetNodeFunction(tokens, pos);
     
     (*pos)++;
@@ -191,8 +196,10 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
 
     if (tokens[*pos].type != FBRACKET_OPEN)
     {
+        // printf("%d\n", tokens[*pos].type);
         node_t* new_new_node = GetNodeA(tokens, pos);
         (tokens + if_pos)->left = new_node;
+        // printf("%d", new_new_node);
         (tokens + if_pos)->right = new_new_node;
         return tokens + if_pos;
     }

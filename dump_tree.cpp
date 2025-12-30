@@ -30,20 +30,10 @@ void DumpGraphNode(node_t* node, FILE* filee, int* n)
 
     switch (node->type)
     {
-        case OP: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case OP_IF: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, (char*)IF, node->left, node->right, node->prev, node); break;
-        case OP_WHILE: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, (char*)WHILE, node->left, node->right, node->prev, node); break;
-        case VAR: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c6c0f2ff\"; color = \"#6746b4ff\"; label = \"{<f2>var|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case NUM: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#e5f2c0ff\"; color = \"#a9b446ff\"; label = \"{<f2>num|%lg}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_num, node->left, node->right, node->prev, node); break;
-        case UOP: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#f2c0deff\"; color = \"#b4469aff\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case OP_EQUAL: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case COMP: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case MINUS: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case PLUS: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case MULT: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case DIVN: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case OP_FUNC: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
-        case OP_PRINTF: fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"#c0f2f2ff\"; color = \"#4682B4\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, node->value.op_name, node->left, node->right, node->prev, node); break;
+        case VAR: PrintNodeInFile(node, filee, "#c6c0f2ff", "#6746b4ff"); break;
+        case NUM: PrintNodeInFile(node, filee, "#e5f2c0ff", "#a9b446ff"); break;
+        case UOP: PrintNodeInFile(node, filee, "#f2c0deff", "#b4469aff"); break;
+        default: PrintNodeInFile(node, filee, "#c0f2f2ff", "#4682B4"); break;
     }
 }
 
@@ -63,4 +53,18 @@ void MakeCommunicationBetweenNodes(node_t* node, FILE* filee)
         fprintf(filee, "%u: <f1> -> %u: <f2> ", node, node->right);
         MakeCommunicationBetweenNodes(node->right, filee);
     }
+}
+
+void PrintNodeInFile(node_t* node, FILE* filee, const char* fillcolor, const char* color)
+{
+    if (node->type == NUM)
+        fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"%s\"; color = \"%s\"; label = \"{<f2>num|%lg}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, fillcolor, color, node->value.op_num, node->left, node->right, node->prev, node);
+
+    else if (node->type == VAR)
+        fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"%s\"; color = \"%s\"; label = \"{<f2>var|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, fillcolor, color, node->value.op_name, node->left, node->right, node->prev, node);
+    
+    else
+        fprintf(filee, "%u [shape=record; style = filled; fillcolor = \"%s\"; color = \"%s\"; label = \"{<f2>op|%s}|{<f0>left \\n %x}|{<f1>right\\n %x}|{prev\\n %x}|{%x}\"];\n", node, fillcolor, color, node->value.op_name, node->left, node->right, node->prev, node);
+
+
 }
