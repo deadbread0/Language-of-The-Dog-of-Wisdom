@@ -11,9 +11,9 @@ int main()
 
     FILE* output_filee = fopen(tree_dump_path, "w");
     pos = 0;
-    printf("1\n");
-    node_t* tree = GetNodeComb(new_tokens, &pos);//while виснет
-    printf("2\n");
+    
+    node_t* tree = GetNodeComb(new_tokens, &pos);
+    
     DumpTree(tree, output_filee);
     fclose(output_filee);
 

@@ -7,6 +7,18 @@ void PutTreeInFile(node_t* node, FILE* filee)
 
     fprintf(filee, "(");
 
+    PutTreeInFileBody(node, filee);
+        
+    fprintf(filee, ")");
+}
+
+void PutTreeInFileBody(node_t* node, FILE* filee)
+{
+    assert(node != nullptr);
+    assert(filee != nullptr);
+
+    fprintf(filee, "(");
+
     if (node->type == NUM)
         fprintf(filee, " \"%lg\" ", node->value.op_num);
     else
@@ -16,10 +28,10 @@ void PutTreeInFile(node_t* node, FILE* filee)
         fprintf(filee, "%s", NILNIL);
         
     if (node->left)
-        PutTreeInFile(node->left, filee);
+        PutTreeInFileBody(node->left, filee);
         
     if (node->right)
-        PutTreeInFile(node->right, filee);
+        PutTreeInFileBody(node->right, filee);
         
     fprintf(filee, ")");
 }

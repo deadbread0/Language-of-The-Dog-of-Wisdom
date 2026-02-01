@@ -24,7 +24,8 @@ enum typee
     DEGREE,
     COMP,
     OP_PRINTF,
-    MAIN_FUNC
+    MAIN_FUNC,
+    OP_RETURN
 };
 
 struct typee_t

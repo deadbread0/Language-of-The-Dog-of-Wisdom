@@ -14,6 +14,7 @@ static const int MAX_LEN_OF_OPERATION = 10;
 #endif
 
 void PutTreeInFile(node_t* node, FILE* filee);
+void PutTreeInFileBody(node_t* node, FILE* filee);
 node_t* ReadNode(int* pos, char* buffer);
 char* ReturnDataOfNode(int* pos, char* buffer);
 

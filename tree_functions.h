@@ -30,3 +30,4 @@ node_t* MakeNode();
 node_t* NewOpNode(char* operation, node_t* left_node, node_t* right_node);
 node_t* NewNumNode(double num, node_t* left_node, node_t* right_node);
 node_t* NewVarNode(char* var, node_t* left_node, node_t* right_node);
+node_t* FindMainFunc(node_t* node, node_t* main_node);

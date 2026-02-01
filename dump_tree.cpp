@@ -10,15 +10,12 @@ void DumpTree(node_t* node, FILE* filee)
     DumpGraphNode(node, filee, &n);
     MakeCommunicationBetweenNodes(node, filee);
     fprintf(filee, "}\n");
-    // system("dot -Tpng files\\tree_dump.dot -o tree_dump.png");
-    // system(".\\tree_dump.png");
 }
 
 void DumpGraphNode(node_t* node, FILE* filee, int* n)
 {
     assert(node != nullptr);
     assert(filee != nullptr);
-    // printf("%d\n", node->type);
 
     if (node->left)
     {

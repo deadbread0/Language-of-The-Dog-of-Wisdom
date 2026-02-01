@@ -33,7 +33,7 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
 
-        if (s[*pos] == '{')
+        if (s[*pos] == '\"')
         {
             tokens[n].type = FBRACKET_OPEN;
             (tokens + n)->value.op_name = (char*)"{";
@@ -42,7 +42,7 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
 
-        if (s[*pos] == '}')
+        if (s[*pos] == '\'')
         {
             tokens[n].type = FBRACKET_CLOSE;
             (tokens + n)->value.op_name = (char*)"}";
@@ -79,6 +79,20 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
 
+        if (CompareWords(s, pos, (char*)MAIN))
+        {
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            tokens[n].type = MAIN_FUNC;
+            (tokens + n)->value.op_name = (char*)MAIN;
+            n++;
+            (*pos)++;
+            continue;
+        }
+
         if (CompareWords(s, pos, (char*)IF))
         {
             (*pos)--;
@@ -88,6 +102,20 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             } 
             tokens[n].type = OP_IF;
             (tokens + n)->value.op_name = (char*)IF;
+            n++;
+            (*pos)++;
+            continue;
+        }
+
+        if (CompareWords(s, pos, (char*)RETURN))
+        {
+            (*pos)--;
+            while (isspace(s[*pos]))
+            {
+                (*pos)--;
+            } 
+            tokens[n].type = OP_RETURN;
+            (tokens + n)->value.op_name = (char*)RETURN;
             n++;
             (*pos)++;
             continue;
@@ -136,10 +164,10 @@ size_t LexAnalysis(char* s, int* pos, node_t* tokens)
             continue;
         }
 
-        if (s[*pos] == ';')
+        if (s[*pos] == '?')
         {
             tokens[n].type = UOP;
-            (tokens + n)->value.op_name = (char*)";";
+            (tokens + n)->value.op_name = (char*)"?";
             n++;
             (*pos)++;
             continue;

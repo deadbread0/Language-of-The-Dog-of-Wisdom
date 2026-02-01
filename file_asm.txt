@@ -1,0 +1,44 @@
+push 1
+push 5
+push 0
+push 0
+je 20
+:0
+pop
+pop
+popm 0
+pushm 0
+out
+hlt
+:1
+pop
+pop
+popm 3
+push 1
+popm 4
+pushm 3
+push 0
+je 60
+:2
+pop
+pop
+pushm 4
+pushm 3
+mul
+popm 4
+pushm 3
+push 1
+sub
+popm 3
+pushm 3
+push 0
+jne 36
+:3
+pop
+pop
+pushm 4
+out
+pushm 4
+push 0
+push 0
+je 10

@@ -136,10 +136,29 @@ void SkipSpace(char* s, int* pos)
 
 void FillNametable(names_t* nametable, node_t* node, int* last_index_in_nametable)
 {
-    // if (node->type == OP_EQUAL && node->left->type == VAR)
-    // {
+    if (node->type == OP_FUNC)
+    {
+        int counterr = 0, num_of_name = 0;
+        for (int i = 0; i < *last_index_in_nametable; i++)
+        {
+            int p = 0;
+            if (CompareWords(node->value.op_name, &p, (nametable + i)->var))
+            {
+                counterr++;
+                num_of_name = (nametable + i)->num_of_name;
+            }
+        }
+
+        if (!counterr)//если функция встречается в первый раз
+            (nametable + *last_index_in_nametable)->num_of_name = *last_index_in_nametable;
+
+        else
+            (nametable + *last_index_in_nametable)->num_of_name = num_of_name;
         
-    // }
+        (nametable + *last_index_in_nametable)->var = node->value.op_name;
+        (nametable + *last_index_in_nametable)->value = counterr + 1;//типа который раз эта функция встречается в коде
+        (*last_index_in_nametable)++;
+    }
 
     if (node->type == VAR)
     {
@@ -160,7 +179,6 @@ void FillNametable(names_t* nametable, node_t* node, int* last_index_in_nametabl
         {
             (nametable + *last_index_in_nametable)->num_of_name = *last_index_in_nametable;
             (nametable + *last_index_in_nametable)->var = node->value.op_name;
-            // (nametable + *last_index_in_nametable)->value = 
             (*last_index_in_nametable)++;
         }
     }

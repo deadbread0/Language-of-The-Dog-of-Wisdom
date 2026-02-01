@@ -1,0 +1,11 @@
+fact(x)?
+hagaga(1)
+    "t = fact(5)?
+    hadebadega(t)?'
+fact(x)
+    "r = 1?
+    hawawaw(x)
+        "r = r * x?
+        x = x - 1?'
+    hadebadega(r)?
+    bakaga(r)?'$
