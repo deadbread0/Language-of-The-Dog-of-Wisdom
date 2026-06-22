@@ -1,0 +1,5 @@
+hagaga(1)?
+hagaga(1)
+    {t = 6?
+    hadebadega(t)?}
+$

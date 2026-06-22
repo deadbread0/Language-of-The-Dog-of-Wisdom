@@ -1,13 +1,33 @@
 #include <stdio.h>
 #define FOR_TYPES
-typedef double (*func_ptr)(double, double);
+typedef int (*func_ptr)(int, int);
 
 enum typee 
 {
     OP,
     VAR, 
-    NUM
+    NUM, 
+    UOP,
+    BRACKET_OPEN,
+    BRACKET_CLOSE,
+    FBRACKET_OPEN,
+    FBRACKET_CLOSE,
+    OP_IF,
+    OP_EQUAL,
+    END,
+    MINUS,
+    PLUS,
+    MULT,
+    DIVN,
+    OP_FUNC,
+    OP_WHILE,
+    DEGREE,
+    COMP,
+    OP_PRINTF,
+    MAIN_FUNC,
+    OP_RETURN
 };
+static const int MAX_LEN_OF_OPERATION = 10;
 
 struct typee_t
 {
@@ -21,6 +41,15 @@ union operation_t
     char* op_name;
 };
 
+struct names_t
+{
+    int num_of_name;
+    char* var;
+    int value;
+    int num_in_stack; //показывает, сколько всякого закинули после этого элемента в стек
+};
+
+
 struct node_t
 {
     typee type;
@@ -28,4 +57,11 @@ struct node_t
     node_t* left;
     node_t* right;
     node_t* prev;
+};  
+
+
+struct operation_opt_t
+{
+    typee op_name;
+    func_ptr ptr;
 };

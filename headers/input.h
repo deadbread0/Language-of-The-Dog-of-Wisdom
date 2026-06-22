@@ -4,5 +4,14 @@
 #include <sys/stat.h>
 #include <assert.h>
 
+#ifndef FOR_FUNC
+#include "functions.h"
+#endif
+
+#ifndef INPUT_FILE
+static const char* input_file_path = "files/input_file.txt";
+#define INPUT_FILE
+#endif
+
 char* PutDataFromFileToBuffer();
 int GetSizeOfInputFile(const char* file_name);

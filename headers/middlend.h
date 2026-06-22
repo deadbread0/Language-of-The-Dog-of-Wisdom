@@ -1,0 +1,12 @@
+#include "../headers/types.h"
+#include "../headers/input.h"
+#include "../headers/tree_optimisation.h"
+#include "../headers/translate_into_x86.h"
+#include "../headers/put_in_file.h"
+#include "../headers/dump_tree.h"
+#include "../headers/functions.h"
+#include "../headers/lex_analysis.h"
+#include "../headers/tree_functions.h"
+
+static const char* tree_path = "files/tree.txt";
+static const char* new_tree_dump_path = "files/new_tree_dump.dot";

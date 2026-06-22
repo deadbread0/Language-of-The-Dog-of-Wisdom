@@ -1,0 +1,4 @@
+all:
+	g++ programs/back-end.cpp functions.cpp input.cpp dump_tree.cpp tree_functions.cpp tree_optimisation.cpp lex_analysis.cpp put_in_file.cpp translate_into_x86.cpp -o exe/new_backend.exe
+clean:
+	rm -rf *.o exe/new_backend.exe
