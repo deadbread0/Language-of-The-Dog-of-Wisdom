@@ -9,15 +9,25 @@ void TranslateIntoAsm(node_t* node, FILE* file_asm)
     node_t* first_node = node;
     names_t* nametable = ReturnEmptyNametable();
 
-    fprintf(file_asm, ";nasm -f elf64 -l files/file_asm.lst files/file_asm.asm\n\n"
-                      ";ld -s -o files/file_asm.exe files/file_asm.o\n\n"
+    fprintf(file_asm, "; nasm -f elf64 -l files/file_asm.lst files/file_asm.asm\n"
+                      "; ld -s -o files/file_asm.exe files/file_asm.o\n"
+                      "; ./files/file_asm.exe\n\n"
                       "global _start\nsection .bss\nBUF_FOR_PRINTF: resb 4\nsection .data\n");
-    // for (int i = 0; i < last_index_in_nametable; i++)
-    //     fprintf(file_asm, "%s equ 0\n", nametable->arr_of_names);//по дефолту все переменные = 0
     fprintf(file_asm, "section .text\n_start:\n\n");
 
     TranslateIntoAsmBody(node, file_asm, nametable, &num_of_labels, &num_of_nametable, &counter_of_commands, first_node);
+
     fprintf(file_asm, "\nmov rax, 0x3C      ; exit64 (rdi)\nxor rdi, rdi\nsyscall\n");
+
+    fprintf(file_asm, "\n\nremake_nums10:\n\t\tpush rax\n\t\txor rdx, rdx\n\t\txor rdi, rdi\n\t\tcqo"
+            "                         ;там при делении надо чтоб размеры делителя и частного определенные были,                            ;так вот это для расширения rax"
+            "\n\n\t\tMakeDigit:\n\t\tmov rbx, 10                 ;на это делить надо\n\t\tdiv rbx"
+            "                     ;остаток от деления в rdx\n\n\t\tadd rdx, 30h                ;цифра -> буква\n\t\tpush rdx"
+            "                    ;кладется на стек\n\n\t\tinc rdi\n\t\tcqo\n\n\t\tcmp rax, 0\n\t\tje NumIsOver"
+            "                ;если число закончилось, заканчиваем вынос цифр в стек\n\n\t\tloop MakeDigit\n\n\t\tNumIsOver:\n\t\tmov rcx, rdi"
+            "                ;в rdi кол-во цифр из прошлого цикла\n\t\tmov rdx, rdi\n\t\txor rdi, rdi\n\t\tFillBuf:\n\t\tpop rdx\n"
+            "\t\tmov byte [BUF_FOR_PRINTF + rdi], dl\n\t\tinc rdi\n\t\tloop FillBuf\n\n\t\tpop rax\n\n\t\tret\n");
+
 }
 
 void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int* num_of_labels, int* num_of_nametable, int* counter_of_commands, node_t* first_node)
@@ -84,49 +94,39 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
         int index = -1, last_j = 0;
         for (int j = 0; j < NT_INITIAL_SIZE; j++)
         {
-            // int pos = 0;
-            // fprintf(stderr, "%d\n", (nametable + j)->num_in_stack);
             if ((nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->left->value.op_name, MAX_LEN_OF_OPERATION) == 0)
             {
                 index = j; //показывает номер переменной в таблице имен
                 break;
             }
 
-            last_j++;
+            if ((nametable + j)->num_in_stack != -1)
+                last_j++;
+            // fprintf(stderr, "%d ", (nametable + j)->num_in_stack);
         }
-        // fprintf(stderr, "hh");
+
+        // fprintf(stderr, "%d ", last_j);
         if (index == -1) //элемента еще нет в таблице имен
         {
             (nametable + last_j)->var = node->left->value.op_name;
-            // fprintf(file_asm, "push 0\t\t\t\t;new prm\n");
-            // add stkcounter;
-            // return;
             index = last_j;
         }
-        // fprintf(stderr, "hh");
-            // fprintf(stderr, "%d ", (nametable + index)->num_in_stack);
+        // fprintf(stderr, "%d %s\n", index, (nametable + index)->var); // ok
         // в index лежит индекс переменной в таблице имен, ща я буду закидывать в стек (или искать в стеке)
-        if ((nametable + index)->num_in_stack == 0) //по дефолту это 0, но если значение переменной уже присваивалось, то уже не 0
+        if ((nametable + index)->num_in_stack == -1) //по дефолту это -1, но если значение переменной уже присваивалось, то уже не -1
         {
             int num = ReturnLastStackNum(nametable);
-            // fprintf(stderr, "%d ", num);
-            // if (num < 0)
-            //     (nametable + index)->num_in_stack = 1;
-            // else
+            fprintf(stderr, "%d %s\n", num, (nametable + index)->var); // ok
             (nametable + index)->num_in_stack = num + 1;
         }
 
-        TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands, first_node); //
+        //строку ниже закомментила тк left value неизменяемо, короче там только переменная валяется
+        // TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands, first_node); //
         TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_commands, first_node);
 
-        // // fprintf(file_asm, "push rbp\npush rax\nmov rbp, rsp\nmov rax, [rbp + 16]\nmov [%s], rax\npop rax\npop rbp\nadd rsp, 8\n", (nametable->arr_of_names + index)->var);
-        // fprintf(file_asm, "\npop rax\t\t\t\t;var = last element from stack\nmov rbp, rsp\nmov [rbp + 8 * %d], rax\n", (nametable + index)->num_in_stack);
-        // return;
         // и тут уже по номеру в стеке записываем 
-        // fprintf(file_asm, "pop rax\t\t\t\t;node = var\n");
-        fprintf(file_asm, "mov [rbp - 8 * %d], rax\t\t\t\t;var = %s\n", (nametable + index)->num_in_stack, node->left->value.op_name);
+        fprintf(file_asm, "pop rax\nmov [rbp - 8 * %d], rax\t\t\t\t;var = %s\n", (nametable + index)->num_in_stack, node->left->value.op_name);
 
-        // fprintf(stderr, "hh");
         return;
     }
 
@@ -173,11 +173,11 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
         if (main_func_starts)
         {
-            fprintf(file_asm, "\npop rbp ;from main\n");
+            fprintf(file_asm, "\npop rax\npop rbp ;from main\n");
         }    
     }
 
-    else
+    else //вроде это когда функция не мэйн
     {
         fprintf(file_asm, ":%d\npop\npop\n", *num_of_labels);
         (*num_of_labels)++;
@@ -226,77 +226,58 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     if (node->type == VAR)
     {
-        // int index = -1, last_j = 0;
-        // for (int j = 0; j < NT_INITIAL_SIZE; j++)
-        // {
-        //     // int pos = 0;
-        //     // fprintf(stderr, "%d\n", (nametable + j)->num_in_stack);
-        //     if ((nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->value.op_name, MAX_LEN_OF_OPERATION) == 0)
-        //     {
-        //         index = j; //показывает номер переменной в таблице имен
-        //         break;
-        //     }
+        int index = 0; //короче в непонятной ситуации будет просто браться 1й элемент
+        for (int j = 0; j < NT_INITIAL_SIZE; j++)
+        {
+            if ((nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->value.op_name, MAX_LEN_OF_OPERATION) == 0)
+            {
+                index = j; //показывает номер переменной в таблице имен
+                break;
+            }
+        }
 
-        //     last_j++;
-        // }
-        // // fprintf(stderr, "hh");
-        // if (index == -1) //элемента еще нет в таблице имен
-        // {
-        //     (nametable + last_j)->var = node->value.op_name;
-        //     // fprintf(file_asm, "push 0\t\t\t\t;new prm\n");
-        //     // add stkcounter;
-        //     // return;
-        //     index = last_j;
-        // }
-        // // fprintf(stderr, "hh");
-        // // в index лежит индекс переменной в таблице имен, ща я буду закидывать в стек (или искать в стеке)
-        // if ((nametable + index)->num_in_stack == -1) //по дефолту это -1, но если значение переменной уже присваивалось, то уже не -1
-        // {
-        //     int num = ReturnLastStackNum(nametable);
-        //     if (num < 0)
-        //         (nametable + index)->num_in_stack = 1;
-        //     else
-        //         (nametable + index)->num_in_stack = num + 1;
-        // }
-        // // и тут уже по номеру в стеке записываем 
-        // // fprintf(file_asm, "pop rax\t\t\t\t;node = var\n");
-        // fprintf(file_asm, "mov [rbp - 8 * %d], rax\t\t\t\t;var = %s\n", (nametable + index)->num_in_stack, node->value.op_name);
+        // в index лежит индекс переменной в таблице имен, ща я буду закидывать в стек (или искать в стеке)
+        if ((nametable + index)->num_in_stack == -1) //по дефолту это -1, но если значение переменной уже присваивалось, то уже не -1
+        {
+            int num = ReturnLastStackNum(nametable);
+            (nametable + index)->num_in_stack = num + 1;
+        }
 
-        // // fprintf(stderr, "hh");
-        // return;
+        fprintf(file_asm, "mov rax, [rbp - 8 * %d]\t\t\t\t;var = %s\npush rax\n", (nametable + index)->num_in_stack, node->value.op_name);
+
+        return;
     }
 
     if (node->type == MINUS)
     {
-        fprintf(file_asm, "sub\n");
+        fprintf(file_asm, "\npop rax\npop rbx\nsub rax, rbx\npush rax\n\n");
         return;
 
     }
 
     if (node->type == PLUS)
     {
-        fprintf(file_asm, "add\n");
+        fprintf(file_asm, "\npop rax\npop rbx\nadd rax, rbx\npush rax\n\n");
         return;
 
     }
 
     else if (node->type == DIVN)
     {
-        fprintf(file_asm, "div\n");
+        fprintf(file_asm, "\npop rax\npop rbx\ndiv ebx\npush rax\n\n");
 
     }
 
     else if (node->type == MULT)
     {
-        fprintf(file_asm, "mul\n");
+        fprintf(file_asm, "\npop rax\npop rbx\nmul ebx\npush rax\n\n");
 
     }
 
     else if (node->type == OP_PRINTF)
     {
-        fprintf(file_asm, "\npop rax\nadd rax, 48\t\t\t\t;make symb from num\nmov [BUF_FOR_PRINTF], rax\n"
-                          "\nmov rax, 0x01\nmov rdi, 1\nmov rsi, BUF_FOR_PRINTF\nmov rdx, 1\nsyscall\n"
-                          "\nmov rax, [BUF_FOR_PRINTF]\nsub rax, 48\t\t\t\t;make num from symb\nmov [BUF_FOR_PRINTF], rax\n\n");
+        fprintf(file_asm, "\ncall remake_nums10\n"
+                          "\nmov rax, 0x01\nmov rdi, 1\nmov rsi, BUF_FOR_PRINTF\nsyscall\n\n");
 
     }
 
