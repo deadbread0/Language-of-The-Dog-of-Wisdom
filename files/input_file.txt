@@ -1,5 +1,14 @@
 hagaga(1)?
 hagaga(1)
     {t = 6?
-    hadebadega(t)?}
+    y = 9?
+    ha (t)
+    {
+        t = 0?
+        ha (t)
+            y = 7?
+    }
+    g = y + t?
+    v = 1?
+    hadebadega(g)?}
 $

@@ -6,23 +6,34 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
     assert(tokens != nullptr);
     assert(pos != nullptr);
 
-    node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
-    val->type = UOP;
-    node_t* prev_val = nullptr;
+    node_t* root = NewOpNode((char*)COMB, nullptr, nullptr);
+    node_t* val = root;
+    bool maiin = false; //это чтобы пропустить объявление main
 
     do
     {
-        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE || tokens[*pos].type == MAIN_FUNC || tokens[*pos].type == OP_FUNC)
-            val->right = GetNodeIF(tokens, pos);
+        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE || tokens[*pos].type == OP_FUNC)
+            val->left = GetNodeIF(tokens, pos);
+
+        else if (tokens[*pos].type == MAIN_FUNC)
+        {
+            val->left = GetNodeIF(tokens, pos);
+            if (maiin)
+                val = val->left;
+            maiin = true;
+        }
 
         else
-            val->right = GetNodeA(tokens, pos);
+        {
+            if (tokens[*pos].type != FBRACKET_CLOSE)
+                val->left = GetNodeA(tokens, pos);
+        }
 
-        (*pos)++;
+        if (tokens[*pos].type != END)
+            (*pos)++;
 
-        prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
-        prev_val = val;
-        val = NewOpNode((char*)COMB, prev_val, nullptr);
+        val->right = NewOpNode((char*)COMB, nullptr, nullptr);
+        val = val->right;
 
         if (tokens[*pos].type == UOP)
             (*pos)++;
@@ -34,7 +45,7 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
 
     (*pos)++;
 
-    return prev_val;
+    return root;
 }
 
 
@@ -176,6 +187,7 @@ node_t* GetNodeA(node_t* tokens, int* pos)
     return node;
 }
 
+
 node_t* GetNodeIF(node_t* tokens, int* pos)
 {
     assert(tokens != nullptr);
@@ -189,9 +201,6 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
     if (tokens[*pos].type == BRACKET_OPEN)
         new_node = GetNodeAddOrSub(tokens, pos);
 
-    node_t* val = NewOpNode((char*)COMB, nullptr, nullptr);
-    node_t* prev_val = nullptr;
-
     if (tokens[*pos].type == UOP)
         return nullptr;
 
@@ -203,9 +212,20 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
         (tokens + if_pos)->right = new_new_node;
         return tokens + if_pos;
     }
+    if ((tokens + if_pos)->type == MAIN_FUNC)
+    {
+        (tokens + if_pos)->left = new_node;
+        return (tokens + if_pos);
+    }
 
     (*pos)++;
     int counter_of_fbracket = 1, counter_of_fbracket_closed = 0;
+
+    (tokens + if_pos)->left = new_node;
+
+    node_t* body_root = NewOpNode((char*)COMB, nullptr, nullptr);
+    node_t* current_comb = body_root;
+    (tokens + if_pos)->prev = body_root;
 
     while (counter_of_fbracket != counter_of_fbracket_closed)
     {
@@ -215,12 +235,13 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
     {
         if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
         {
-            counter_of_fbracket++;
-            val->right = GetNodeIF(tokens, pos);
+            if (tokens[(*pos + 1)].type == FBRACKET_OPEN)
+                counter_of_fbracket++;
+            current_comb->left = GetNodeIF(tokens, pos);
         }
 
         else
-            val->right = GetNodeA(tokens, pos);
+            current_comb->left = GetNodeA(tokens, pos);
         
         if (tokens[*pos].type == UOP)
             (*pos)++;
@@ -228,22 +249,18 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
         if (tokens[*pos].type == FBRACKET_CLOSE)
             counter_of_fbracket_closed++;
 
-        prev_val = NewOpNode((char*)COMB, nullptr, nullptr);
-        prev_val = val;
-        val = NewOpNode((char*)COMB, prev_val, nullptr);
+        current_comb->right = NewOpNode((char*)COMB, nullptr, nullptr);
+        current_comb = current_comb->right;
 
     } while (tokens[*pos].type != FBRACKET_CLOSE);
     }
 
-    while (tokens[*pos].type == FBRACKET_CLOSE)
-        (*pos)++;
-    (*pos)--;
-    
-    (tokens + if_pos)->left = new_node;
-    (tokens + if_pos)->right = prev_val;
-    return tokens + if_pos;
+    (tokens + if_pos)->right = body_root;
+
+    return (tokens + if_pos);
 
 }
+
 
 node_t* MakeNode()
 {
