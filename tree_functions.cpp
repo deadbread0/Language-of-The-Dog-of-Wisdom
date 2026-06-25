@@ -8,19 +8,42 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
 
     node_t* root = NewOpNode((char*)COMB, nullptr, nullptr);
     node_t* val = root;
-    bool maiin = false; //это чтобы пропустить объявление main
+    node_t* maiin = nullptr; 
+    int fopened = 0, fclosed = 0;
 
     do
     {
-        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE || tokens[*pos].type == OP_FUNC)
+        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
             val->left = GetNodeIF(tokens, pos);
+
+        else if (tokens[*pos].type == OP_FUNC)
+        {
+            if (maiin && fclosed != fopened)
+            {
+                node_t* prevval = val;
+                maiin->right = NewOpNode((char*)COMB, nullptr, nullptr);
+                val = maiin->right;
+                val->left = GetNodeFunction(tokens, pos);
+                val->right = NewOpNode((char*)COMB, nullptr, nullptr);
+                val = val->right;
+                maiin = val;
+                val = prevval;
+            }
+            else
+                val->left = GetNodeIF(tokens, pos);
+        }
 
         else if (tokens[*pos].type == MAIN_FUNC)
         {
             val->left = GetNodeIF(tokens, pos);
+            node_t* prevval = val;
             if (maiin)
+            {
                 val = val->left;
-            maiin = true;
+                val->prev = prevval;
+            }
+
+            maiin = prevval->left;
         }
 
         else
@@ -29,6 +52,10 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
                 val->left = GetNodeA(tokens, pos);
         }
 
+        if (tokens[*pos].type == FBRACKET_CLOSE)
+            fclosed++;
+        if (tokens[*pos].type == FBRACKET_OPEN)
+            fopened++;
         if (tokens[*pos].type != END)
             (*pos)++;
 
@@ -233,7 +260,7 @@ node_t* GetNodeIF(node_t* tokens, int* pos)
             (*pos)++;
     do
     {
-        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
+        if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE || tokens[*pos].type == OP_FUNC)
         {
             if (tokens[(*pos + 1)].type == FBRACKET_OPEN)
                 counter_of_fbracket++;
