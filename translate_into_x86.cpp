@@ -37,7 +37,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
     if (node->type == MAIN_FUNC)
     {
         main_func_starts = true;
-        fprintf(file_asm, "push rbp\nmov rbp, rsp\t\t\t\t;start main func\nsub rsp, 8 * 32\n");
+        fprintf(file_asm, "\npush rbp\nmov rbp, rsp\t\t\t\t;start main func\nsub rsp, 8 * 32\n\n");
         nametable = ReturnEmptyNametable(); //amount of prms = 32
     }
 
@@ -45,7 +45,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
     {
         TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node);
 
-        fprintf(file_asm, "\npop rax\nmov rbx, 0\ncmp rax, rbx\n");
+        fprintf(file_asm, "\npop rax\ntest rax, rax\n");
         fprintf(file_asm, "je loop%d\n", *counter_of_loops);
         int old_loop = *counter_of_loops;
         (*counter_of_loops)++;
@@ -59,6 +59,22 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     if (node->type == OP_WHILE)
     {
+        TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node);
+
+        fprintf(file_asm, "\npop rax\ntest rax, rax\n");
+        fprintf(file_asm, "je loop%d\n", *counter_of_loops);
+        int old_loop = *counter_of_loops;
+        (*counter_of_loops)++;
+        fprintf(file_asm, "loop%d:\n", *counter_of_loops);
+        (*counter_of_loops)++;
+
+        TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node);
+        TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node);
+        fprintf(file_asm, "\npop rax\ntest rax, rax\njne loop%d\n", old_loop + 1);
+
+        fprintf(file_asm, "\nloop%d:\n", old_loop);
+
+        return;
         // int old_counter = *num_of_labels;
         // int ended_func = CountAmountOfEndFunc(first_node, node);
 
@@ -244,7 +260,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     if (node->type == MINUS)
     {
-        fprintf(file_asm, "\npop rax\npop rbx\nsub rax, rbx\npush rax\n\n");
+        fprintf(file_asm, "\npop rbx\npop rax\nsub rax, rbx\npush rax\n\n");
         return;
 
     }
@@ -258,7 +274,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     else if (node->type == DIVN)
     {
-        fprintf(file_asm, "\npop rax\npop rbx\ndiv ebx\npush rax\n\n");
+        fprintf(file_asm, "\npop rbx\npop rax\ndiv ebx\npush rax\n\n");
 
     }
 
