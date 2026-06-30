@@ -25,7 +25,18 @@ enum typee
     COMP,
     OP_PRINTF,
     MAIN_FUNC,
-    OP_RETURN
+    OP_RETURN,
+
+    OP_STACK,
+    REG,
+    QBRACKET_OPEN_T,
+    QBRACKET_CLOSE_T,
+    OP_MOV,
+    OP_POINTX2,
+    OP_NO_ARGS,
+    OP_1_ARG,
+    OP_2_ARGS,
+    MEM
 };
 static const int MAX_LEN_OF_OPERATION = 10;
 

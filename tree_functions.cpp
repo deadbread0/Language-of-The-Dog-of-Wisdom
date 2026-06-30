@@ -13,6 +13,7 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
 
     do
     {
+        // fprintf(stderr, "%s\n", tokens[*pos].value.op_name);
         if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
             val->left = GetNodeIF(tokens, pos);
 
@@ -43,7 +44,8 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
                 val->prev = prevval;
             }
 
-            maiin = prevval->left;
+            maiin = prevval;
+        // fprintf(stderr, "%u\n", maiin);
         }
 
         else
@@ -51,6 +53,7 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
             if (tokens[*pos].type != FBRACKET_CLOSE)
                 val->left = GetNodeA(tokens, pos);
         }
+        // fprintf(stderr, "   %s\n", tokens[*pos].value.op_name);
 
         if (tokens[*pos].type == FBRACKET_CLOSE)
             fclosed++;

@@ -22,6 +22,7 @@ static const char* COMB = ";";
 // #define MAX_LEN_OP
 // #endif
 
+
 node_t* GetNodeComb(node_t* tokens, int* pos);
 node_t* GetNodeNum(node_t* tokens, int* pos);
 node_t* GetNodeAddOrSub(node_t* tokens, int* pos);

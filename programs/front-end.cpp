@@ -3,7 +3,7 @@
 int main()
 {
     int pos = 0;
-    char* data = PutDataFromFileToBuffer();
+    char* data = PutDataFromFileToBuffer(input_file_path);
     int size = GetSizeOfInputFile(input_file_path);
     node_t* new_tokens = (node_t*)calloc(size, sizeof(node_t));
     

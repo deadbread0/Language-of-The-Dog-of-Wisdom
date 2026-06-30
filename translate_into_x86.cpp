@@ -153,6 +153,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
         {
             fprintf(file_asm, "\npop rax\npop rbp ;from main\n");
             fprintf(file_asm, "\nmov rax, 0x3C      ; exit64 (rdi)\nxor rdi, rdi\nsyscall\n");
+            return;
         }    
     }
 

@@ -12,8 +12,6 @@ void TranslateIntoAsm(node_t* node, FILE* file_asm);
 void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int* num_of_labels, int* num_of_nametable, int* counter_of_commands, node_t* first_node);
 // void CountAmountOfSteps(node_t* node, int* counter);
 node_t* FillUsersFunc(node_t* node);
-// void CountAmountOfStepsForFunctionDeclaration(node_t* node, int* counter, char* node_name, int* total);
-// void CountAmountOfStepsForFunctionCall(node_t* node, int* counter, char* node_name, int* total, names_t* nametable, int* num_of_nametable, int* realtotal);
 void CountAmountOfLabels(node_t* node, node_t* first_node, int* counter);
 node_t* ReturnFuncDeclaration(node_t* first_node, node_t* node);
 node_t* ReturnFuncCall(node_t* first_node, node_t* node, node_t* call_node);

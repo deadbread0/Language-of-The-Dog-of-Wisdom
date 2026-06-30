@@ -24,10 +24,5 @@ static const char* arr_of_const_func[] = {SIN, COS, TG, CTG, LN, PRINTF, RETURN}
 #define LEX
 #endif
 
-// #ifndef MAX_LEN_OP
-// // static const int MAX_LEN_OF_OPERATION = 10;
-// #define MAX_LEN_OP
-// #endif
-
 size_t LexAnalysis(char* s, int* pos, node_t* tokens);
 bool CompareWords(char* s, int* pos, char* word);

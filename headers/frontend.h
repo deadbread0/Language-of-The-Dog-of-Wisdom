@@ -1,5 +1,7 @@
 #include "../headers/input.h"
+#ifndef FOR_FUNC
 #include "../headers/functions.h"
+#endif
 #include "../headers/dump_tree.h"
 #include "../headers/tree_functions.h"
 #include "../headers/tree_optimisation.h"

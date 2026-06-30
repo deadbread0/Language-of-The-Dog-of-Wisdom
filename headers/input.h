@@ -13,5 +13,5 @@ static const char* input_file_path = "files/input_file.txt";
 #define INPUT_FILE
 #endif
 
-char* PutDataFromFileToBuffer();
+char* PutDataFromFileToBuffer(const char* input_file);
 int GetSizeOfInputFile(const char* file_name);

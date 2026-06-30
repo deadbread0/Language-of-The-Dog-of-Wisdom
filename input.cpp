@@ -1,8 +1,8 @@
 #include "headers/input.h"
 
-char* PutDataFromFileToBuffer()
+char* PutDataFromFileToBuffer(const char* input_file)
 {
-    int size = GetSizeOfInputFile(input_file_path);
+    int size = GetSizeOfInputFile(input_file);
 
     char* buffer = (char*)calloc(size + 1, sizeof(char));
 
@@ -12,7 +12,7 @@ char* PutDataFromFileToBuffer()
         return nullptr;
     }
 
-    FILE* filee = fopen(input_file_path, "r");
+    FILE* filee = fopen(input_file, "r");
     fread(buffer, sizeof(char), size + 1, filee);
 
     if (!buffer)
