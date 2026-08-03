@@ -17,11 +17,6 @@ static const char* COMB = ";";
 #define TREE_F
 #endif
 
-// #ifndef MAX_LEN_OP
-// static const int MAX_LEN_OF_OPERATION = 10;
-// #define MAX_LEN_OP
-// #endif
-
 
 node_t* GetNodeComb(node_t* tokens, int* pos);
 node_t* GetNodeNum(node_t* tokens, int* pos);
@@ -38,3 +33,5 @@ node_t* NewOpNode(char* operation, node_t* left_node, node_t* right_node);
 node_t* NewNumNode(double num, node_t* left_node, node_t* right_node);
 node_t* NewVarNode(char* var, node_t* left_node, node_t* right_node);
 node_t* FindMainFunc(node_t* node, node_t* main_node);
+void CountFBrackets(int pos, node_t* tokens, int* fopened, int* fclosed);
+void DestroyTree(node_t* node);

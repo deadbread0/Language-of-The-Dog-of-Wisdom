@@ -1,4 +1,4 @@
 all:
-	g++ programs/middle-end.cpp functions.cpp tree_functions.cpp lex_analysis.cpp input.cpp tree_optimisation.cpp translate_into_x86.cpp put_in_file.cpp dump_tree.cpp -o exe/middle-end.exe
+	g++ programs/middle-end.cpp functions.cpp tree_functions.cpp lex_analysis.cpp input.cpp tree_optimisation.cpp translate_into_x86.cpp put_in_file.cpp dump_tree.cpp free_memory.cpp -o exe/middle-end.exe
 clean:
 	rm -rf *.o exe/middle-end.exe

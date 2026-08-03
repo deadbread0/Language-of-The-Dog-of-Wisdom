@@ -19,7 +19,9 @@ int main()
 
     FILE* filee_for_tree = fopen(tree_path, "w");
     PutTreeInFile(new_tree, filee_for_tree);
-    free(new_tree);
+    
+    DestroyTree(new_tree);
+    FreeMem(buf);
     fclose(filee_for_tree);
     
     return 0;

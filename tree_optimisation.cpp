@@ -36,8 +36,6 @@ node_t* BodyOfConstantOptimisation(node_t* node)
         }
 
         node->type = NUM; 
-        // free(node->left);//что ж делать чтож делать..
-        // free(node->right);
         node->left = nullptr;
         node->right = nullptr;
     }

@@ -1,5 +1,5 @@
 #include "../headers/frontend.h"
-//warning если исп только один main, к нему надо объявление добавить (че то с :??)
+//warning если исп только один main, к нему надо объявление добавить 
 int main()
 {
     int pos = 0;
@@ -13,14 +13,14 @@ int main()
     pos = 0;
     
     node_t* tree = GetNodeComb(new_tokens, &pos);
-    free(new_tokens);
+    FreeMem(new_tokens);
 
     DumpTree(tree, output_filee);
     fclose(output_filee);
 
     FILE* filee_for_tree = fopen(tree_path, "w");
     PutTreeInFile(tree, filee_for_tree);
-    free(tree);
+
     fclose(filee_for_tree);
     
     return 0;

@@ -4,10 +4,9 @@
 #ifndef FOR_FUNC
 #include "functions.h"
 #endif 
-// #ifndef FOR_CONST
-// #include "const.h"
-// #endif
+
 #include <cstring>
+
 #ifndef LEX
 static const char* PRINTF = "hadebadega";
 static const char* WHILE = "hawawaw";

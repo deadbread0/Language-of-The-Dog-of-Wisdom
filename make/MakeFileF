@@ -1,4 +1,4 @@
 all:
-	g++ programs/front-end.cpp input.cpp functions.cpp dump_tree.cpp tree_functions.cpp tree_optimisation.cpp lex_analysis.cpp put_in_file.cpp translate_into_x86.cpp -o exe/front-end.exe
+	g++ programs/front-end.cpp input.cpp functions.cpp dump_tree.cpp tree_functions.cpp tree_optimisation.cpp lex_analysis.cpp put_in_file.cpp translate_into_x86.cpp free_memory.cpp -o exe/front-end.exe
 clean:
 	rm -rf *.o exe/front-end.exe

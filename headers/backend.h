@@ -1,5 +1,3 @@
-
-
 #include "functions.h"
 #include "input.h"
 #include "dump_tree.h"
@@ -8,6 +6,7 @@
 #include "lex_analysis.h"
 #include "put_in_file.h"
 #include "translate_into_x86.h"
+#include "free_memory.h"
 
 static const char* file_asm_path = "files/file_asm.asm";
 static const char* tree_path = "files/tree.txt";

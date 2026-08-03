@@ -1,9 +1,11 @@
 #ifndef FOR_TYPES
 #include "types.h"
 #endif
+
 #include <assert.h>
 #include <cstring>
 #include <math.h>
+
 #define LEFT_NUM ((node->left)->value).op_num
 #define RIGHT_NUM ((node->right)->value).op_num
 #define LEFT_TYPE (node->left)->type
@@ -12,7 +14,6 @@
 static const char* MUL = "*";
 
 #ifndef MAX_LEN_OP
-// static const int MAX_LEN_OF_OPERATION = 10;
 #define MAX_LEN_OP
 #endif
 

@@ -3,6 +3,9 @@
 
 void TranslateIntoAsm(node_t* node, FILE* file_asm)
 {
+    assert(node != nullptr);
+    assert(file_asm != nullptr);
+
     int num_of_labels = 0;
     int num_of_nametable = 0;
     int counter_of_loops = 0;
@@ -13,18 +16,11 @@ void TranslateIntoAsm(node_t* node, FILE* file_asm)
                       "; ld -s -o files/file_asm.exe files/file_asm.o\n"
                       "; ./files/file_asm.exe\n\n"
                       "global _start\nsection .bss\nBUF_FOR_PRINTF: resb 32\nsection .data\n");
-    fprintf(file_asm, "section .text\n_start:\n\n");
+    fprintf(file_asm, "section .text\n");
+    fprintf(file_asm, "\n_start:\n\n");
 
     TranslateIntoAsmBody(node, file_asm, nametable, &num_of_labels, &num_of_nametable, &counter_of_loops, first_node);
-
-    fprintf(file_asm, "\n\nremake_nums10:\n\t\tpush rax\n\t\txor rdx, rdx\n\t\txor rdi, rdi\n\t\tcqo"
-            "                         ;там при делении надо чтоб размеры делителя и частного определенные были,                            ;так вот это для расширения rax"
-            "\n\n\t\tMakeDigit:\n\t\tmov rbx, 10                 ;на это делить надо\n\t\tdiv rbx"
-            "                     ;остаток от деления в rdx\n\n\t\tadd rdx, 30h                ;цифра -> буква\n\t\tpush rdx"
-            "                    ;кладется на стек\n\n\t\tinc rdi\n\t\tcqo\n\n\t\tcmp rax, 0\n\t\tje NumIsOver"
-            "                ;если число закончилось, заканчиваем вынос цифр в стек\n\n\t\tloop MakeDigit\n\n\t\tNumIsOver:\n\t\tmov rcx, rdi"
-            "                ;в rdi кол-во цифр из прошлого цикла\n\t\tmov rdx, rdi\n\t\txor rdi, rdi\n\t\tFillBuf:\n\t\tpop rdx\n"
-            "\t\tmov byte [BUF_FOR_PRINTF + rdi], dl\n\t\tinc rdi\n\t\tloop FillBuf\n\n\t\tpop rax\n\n\t\tret\n");
+    free(nametable);
 
 }
 
@@ -35,7 +31,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
     if (node->type == MAIN_FUNC)
     {
         main_func_starts = true;
-        fprintf(file_asm, "\npush rbp\nmov rbp, rsp\t\t\t\t;start main func\nsub rsp, 8 * 32\n\n");
+        fprintf(file_asm, "\npush rbp\nmov rbp, rsp\t\t\t\t;start main func\nsub rsp, 256\n\n");
         nametable = ReturnEmptyNametable(); //amount of prms = 32
     }
 
@@ -77,11 +73,11 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
     
     if (node->type == OP_EQUAL && node->left->type == VAR)
     {
-        
         int index = -1, last_j = 0;
         for (int j = 0; j < NT_INITIAL_SIZE; j++)
         {
-            if ((nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->left->value.op_name, MAX_LEN_OF_OPERATION) == 0)
+
+            if ((nametable + j)->var && (nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->left->value.op_name, MAX_LEN_OF_OPERATION) == 0)
             {
                 index = j; //показывает номер переменной в таблице имен
                 break;
@@ -89,6 +85,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
             if ((nametable + j)->num_in_stack != -1)
                 last_j++;
+
         }
 
         if (index == -1) //элемента еще нет в таблице имен
@@ -103,12 +100,10 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
             (nametable + index)->num_in_stack = num + 1;
         }
 
-        //строку ниже закомментила тк left value неизменяемо, короче там только переменная валяется
-        // TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node); //
         TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node);
 
         // и тут уже по номеру в стеке записываем 
-        fprintf(file_asm, "pop rax\nmov [rbp - 8 * %d], rax\t\t\t\t;var = %s\n", (nametable + index)->num_in_stack, node->left->value.op_name);
+        fprintf(file_asm, "pop rax\nmov [rbp - %d], rax\t\t\t\t;var = %s\n", (nametable + index)->num_in_stack * 8, node->left->value.op_name);
 
         return;
     }
@@ -119,6 +114,7 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
     {
         TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node); //это параметры передаем (пока только 1)
         fprintf(file_asm, "\npop rax\t\t\t\t;забрать параметр\ncall %s\n", node->value.op_name);
+        fprintf(file_asm, "\npush rax\t\t\t\t;функция с возвращаемым значением\n");
    
         return;
     }
@@ -127,14 +123,15 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     if (node->right && node->type == OP_FUNC)
     {
-        fprintf(file_asm, "\n%s:\npush rbp\nmov rbp, rsp\nsub rsp, 8 * 32\n\n", node->value.op_name); //ради локальных переменных новый rbp
-        // fprintf(file_asm, "mov rax, [rbp + 8]\n"); пока без параметров буду делать
-        // TranslateIntoAsmBody(node->left, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node); //это параметры передаем
-        TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node); //тело функции
+        fprintf(file_asm, "\n%s:\npush rbp\nmov rbp, rsp\nsub rsp, 256\n\n", node->value.op_name); //ради локальных переменных новый rbp
+        fprintf(file_asm, "mov [rbp - 8], rax\t\t\t\t;параметр сюда\n"); 
+        names_t* new_nametable = ReturnEmptyNametable();
+        TranslateIntoAsmBody(node->left, file_asm, new_nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node); //это параметры передаем
+        TranslateIntoAsmBody(node->right, file_asm, new_nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node); //тело функции
 
 
-        //тут уже выход из функции, возвращаем наш rbp
-        fprintf(file_asm, "\nadd rsp, 8 * 32\npop rbp\nret\n");  
+        // тут уже выход из функции, возвращаем наш rbp и удаляем параметр из стека
+        fprintf(file_asm, "\npop rbx\nadd rsp, 256\npop rbp\nret\n");  
         func_starts = true;       
     }
 
@@ -152,54 +149,11 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
         if (main_func_starts)
         {
             fprintf(file_asm, "\npop rax\npop rbp ;from main\n");
-            fprintf(file_asm, "\nmov rax, 0x3C      ; exit64 (rdi)\nxor rdi, rdi\nsyscall\n");
+            fprintf(file_asm, "\nmov rax, 60      ; exit64 (rdi)\nxor rdi, rdi\nsyscall\n");
             return;
         }    
     }
 
-    // else //вроде это когда функция не мэйн и это уже не вызов пупупу
-    // {
-
-        
-
-        // fprintf(file_asm, ":%d\npop\npop\n", *num_of_labels);
-        // (*num_of_labels)++;
-
-        // if (node->left->type == VAR)
-        // {
-        //     int index = 0;
-        //     for (int j = 0; j < NT_INITIAL_SIZE; j++)
-        //     {
-        //         if (strncmp((nametable + j)->var, node->left->value.op_name, MAX_LEN_OF_OPERATION) == 0)
-        //         {
-        //             // index = j;
-        //             break;
-        //         }
-        //         index++;
-        //     }
-        //     // (nametable + index)->var = node->left->value.op_name; ??
-        //     // (nametable + index)->value
-        //     // uu
-
-        //     fprintf(file_asm, "popm %d\n", (nametable + index)->num_of_name);//тут типа переменная объявления функции приняла значение из вызова функции
-        //     (*counter_of_loops) += 2;
-        // }
-
-        // if (node->right)
-        //     TranslateIntoAsmBody(node->right, file_asm, nametable, num_of_labels, num_of_nametable, counter_of_loops, first_node);
-
-        // node_t* call_node = nullptr;
-        // node_t* func_node = ReturnFuncCall(first_node, node, call_node);
-        // int l_counter = CountLabels(first_node, func_node);
-
-        // fprintf(file_asm, "push 0\npush 0\n");
-        // fprintf(file_asm, "je %d\n", l_counter);
-        // if (func_starts)
-        // {
-        //     fprintf(file_asm, "\npop rbp ;from func\n");
-        // }  
-    // }
-    
     if (node->type == NUM)
     {
         fprintf(file_asm, "push %lg\t\t\t\t;num\n", node->value.op_num);
@@ -208,16 +162,26 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     if (node->type == VAR)
     {
-        int index = 0; //короче в непонятной ситуации будет просто браться 1й элемент
+        int index = -1, last_j = 0;
         for (int j = 0; j < NT_INITIAL_SIZE; j++)
         {
-            if ((nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->value.op_name, MAX_LEN_OF_OPERATION) == 0)
+
+            if ((nametable + j)->var && (nametable + j)->num_in_stack != -1 && strncmp((nametable + j)->var, node->value.op_name, MAX_LEN_OF_OPERATION) == 0)
             {
                 index = j; //показывает номер переменной в таблице имен
                 break;
             }
+
+            if ((nametable + j)->num_in_stack != -1)
+                last_j++;
+
         }
 
+        if (index == -1) //элемента еще нет в таблице имен
+        {
+            (nametable + last_j)->var = node->value.op_name;
+            index = last_j;
+        }
         // в index лежит индекс переменной в таблице имен, ща я буду закидывать в стек (или искать в стеке)
         if ((nametable + index)->num_in_stack == -1) //по дефолту это -1, но если значение переменной уже присваивалось, то уже не -1
         {
@@ -225,10 +189,18 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
             (nametable + index)->num_in_stack = num + 1;
         }
 
-        fprintf(file_asm, "mov rax, [rbp - 8 * %d]\t\t\t\t;var = %s\npush rax\n", (nametable + index)->num_in_stack, node->value.op_name);
+        fprintf(file_asm, "mov rax, [rbp - %d]\t\t\t\t;var = %s\npush rax\n", (nametable + index)->num_in_stack * 8, node->value.op_name);
 
         return;
     }
+
+    if (node->type == OP_RETURN) //короче если prm = func(), то вылезает лишний pop, надо к нему push сделать
+    {
+        fprintf(file_asm, "pop rax\t\t\t\t;возвращаемый параметр\n");
+        fprintf(file_asm, "\npop rbx\nadd rsp, 256\npop rbp\nret\n");  
+        return;
+    }
+
 
     if (node->type == MINUS)
     {
@@ -246,21 +218,19 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
     else if (node->type == DIVN)
     {
-        fprintf(file_asm, "\npop rbx\npop rax\ndiv ebx\npush rax\n\n");
+        fprintf(file_asm, "\npop rbx\npop rax\ndiv rbx\npush rax\n\n");
 
     }
 
     else if (node->type == MULT)
     {
-        fprintf(file_asm, "\npop rax\npop rbx\nmul ebx\npush rax\n\n");
+        fprintf(file_asm, "\npop rax\npop rbx\nmul rbx\npush rax\n\n");
 
     }
 
     else if (node->type == OP_PRINTF)
     {
-        fprintf(file_asm, "\npop rax\t\t\t\t;все передаем через стек ага\ncall remake_nums10\n"
-                          "\nmov rax, 0x01\nmov rdi, 1\nmov rsi, BUF_FOR_PRINTF\nsyscall\n\n");
-
+        fprintf(file_asm, "\npop rax\t\t\t\t;все передаем через стек ага\nmov rdi, rax\t\t\t\t;передача аргумента на печать\ncall printf_num\n");
     }
 
     return;
@@ -268,6 +238,8 @@ void TranslateIntoAsmBody(node_t* node, FILE* file_asm, names_t* nametable, int*
 
 node_t* FillTypesInTree(node_t* node)
 {
+    assert(node != nullptr);
+
     if (node->left)
         FillTypesInTree(node->left);
     if (node->right)
@@ -357,7 +329,7 @@ node_t* FillTypesInTree(node_t* node)
         node->type = OP_IF;
     }
 
-    else if (CompareWords(node->value.op_name, &pos, (char*)RETURN))
+    else if (CompareWords(node->value.op_name, &pos, (char*)RETURN)) //когда параметр возвращаем
     {
         node->type = OP_RETURN;
     }
@@ -387,6 +359,7 @@ node_t* FillTypesInTree(node_t* node)
 
 node_t* FillUsersFunc(node_t* node)
 {
+    assert(node != nullptr);
 
     if (node->left)
         FillUsersFunc(node->left);
@@ -414,8 +387,11 @@ char* PutTreeFromFileToBuffer(int size)
 }
 
 
-node_t* ReturnFuncDeclaration(node_t* first_node, node_t* node)//
+node_t* ReturnFuncDeclaration(node_t* first_node, node_t* node)
 {
+    assert(node != nullptr);
+    assert(first_node != nullptr);
+
     if (first_node->type == OP_FUNC && first_node->right && strncmp(node->value.op_name, first_node->value.op_name, MAX_LEN_OF_FUNC_NAME) == 0)
         node = first_node;
 
@@ -429,6 +405,10 @@ node_t* ReturnFuncDeclaration(node_t* first_node, node_t* node)//
 
 node_t* ReturnFuncCall(node_t* first_node, node_t* node, node_t* call_node)
 {
+    assert(node != nullptr);
+    assert(first_node != nullptr);
+    assert(call_node != nullptr);
+
     if (first_node->type == OP_FUNC && !first_node->right && strncmp(node->value.op_name, first_node->value.op_name, MAX_LEN_OF_FUNC_NAME) == 0)
     {
         call_node = first_node;
@@ -443,7 +423,11 @@ node_t* ReturnFuncCall(node_t* first_node, node_t* node, node_t* call_node)
 
 int CountLabels(node_t* first_node, node_t* node)
 {
-    if (first_node == node) {
+    assert(first_node != nullptr);
+    assert(node != nullptr);
+
+    if (first_node == node) 
+    {
         return 0;
     }
 
@@ -472,6 +456,9 @@ int CountLabels(node_t* first_node, node_t* node)
 }
 void CountLabelsToTheEnd(node_t* node, int* counter)
 {
+    assert(node != nullptr);
+    assert(counter != nullptr);
+
     if (node->type == OP_FUNC || node->type == OP_IF || node->type == OP_WHILE)
     {
         (*counter)++;
@@ -490,6 +477,9 @@ void CountLabelsToTheEnd(node_t* node, int* counter)
 
 int CountAmountOfEndFunc(node_t* first_node, node_t* node)
 {
+    assert(first_node != nullptr);
+    assert(node != nullptr);
+    
     if (first_node->left)
     {
         int d1 = CountLabels(first_node->left, node);
@@ -497,7 +487,8 @@ int CountAmountOfEndFunc(node_t* first_node, node_t* node)
             return d1;
     }
 
-    if (first_node == node) {
+    if (first_node == node) 
+    {
         return 0;
     }
 

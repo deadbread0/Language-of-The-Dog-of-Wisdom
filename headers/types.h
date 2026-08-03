@@ -2,6 +2,7 @@
 #define FOR_TYPES
 typedef int (*func_ptr)(int, int);
 
+#ifndef ASM
 enum typee 
 {
     OP,
@@ -25,19 +26,46 @@ enum typee
     COMP,
     OP_PRINTF,
     MAIN_FUNC,
-    OP_RETURN,
+    OP_RETURN
+};
+#endif
 
-    OP_STACK,
+#ifdef ASM
+enum typee 
+{
+    NUM, 
+    COMMA_T,
+    MINUS,
+    PLUS,
+    MULT,
+    DIVN,
+    OP_FUNC,
+    OP_PRINTF,
+    OP_RETURN,
     REG,
     QBRACKET_OPEN_T,
     QBRACKET_CLOSE_T,
     OP_MOV,
     OP_POINTX2,
-    OP_NO_ARGS,
-    OP_1_ARG,
-    OP_2_ARGS,
-    MEM
+    MEM,
+    CALL_T,
+    SYSCALL_T,
+    SUB_T,
+    ADD_T,
+    MUL_T,
+    DIV_T,
+    POP_T,
+    PUSH_T,
+    XOR_T,
+    TEST_T,
+    JE_T,
+    JNE_T,
+    JMP_T,
+    CQTO_T,
+    CMP_T
 };
+#endif
+
 static const int MAX_LEN_OF_OPERATION = 10;
 
 struct typee_t
@@ -60,7 +88,7 @@ struct names_t
     int num_in_stack; //показывает, сколько всякого закинули после этого элемента в стек
 };
 
-
+#ifndef ASM
 struct node_t
 {
     typee type;
@@ -69,6 +97,15 @@ struct node_t
     node_t* right;
     node_t* prev;
 };  
+#endif
+
+#ifdef ASM
+struct node_t
+{
+    typee type;
+    operation_t value;
+};  
+#endif
 
 
 struct operation_opt_t

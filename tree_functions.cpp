@@ -13,25 +13,29 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
 
     do
     {
-        // fprintf(stderr, "%s\n", tokens[*pos].value.op_name);
         if (tokens[*pos].type == OP_IF || tokens[*pos].type == OP_WHILE)
             val->left = GetNodeIF(tokens, pos);
 
         else if (tokens[*pos].type == OP_FUNC)
         {
-            if (maiin && fclosed != fopened)
+            CountFBrackets(*pos, tokens, &fopened, &fclosed);
+            if (maiin && fclosed == fopened && fclosed != 0)
             {
                 node_t* prevval = val;
                 maiin->right = NewOpNode((char*)COMB, nullptr, nullptr);
                 val = maiin->right;
                 val->left = GetNodeFunction(tokens, pos);
-                val->right = NewOpNode((char*)COMB, nullptr, nullptr);
-                val = val->right;
+                val = val->left;
                 maiin = val;
-                val = prevval;
+            }
+            else if (fopened != 0)
+            {
+                val->left = GetNodeFunction(tokens, pos);
+                val->right = NewOpNode((char*)COMB, nullptr, nullptr);
             }
             else
                 val->left = GetNodeIF(tokens, pos);
+            
         }
 
         else if (tokens[*pos].type == MAIN_FUNC)
@@ -45,7 +49,6 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
             }
 
             maiin = prevval;
-        // fprintf(stderr, "%u\n", maiin);
         }
 
         else
@@ -53,12 +56,7 @@ node_t* GetNodeComb(node_t* tokens, int* pos)
             if (tokens[*pos].type != FBRACKET_CLOSE)
                 val->left = GetNodeA(tokens, pos);
         }
-        // fprintf(stderr, "   %s\n", tokens[*pos].value.op_name);
 
-        if (tokens[*pos].type == FBRACKET_CLOSE)
-            fclosed++;
-        if (tokens[*pos].type == FBRACKET_OPEN)
-            fopened++;
         if (tokens[*pos].type != END)
             (*pos)++;
 
@@ -194,7 +192,7 @@ node_t* GetNodeFunction(node_t* tokens, int* pos)
     int fpos = (*pos);
 
     (*pos)++;
-    (tokens + fpos)->right = GetNodeBracket(tokens, pos);
+    (tokens + fpos)->left = GetNodeBracket(tokens, pos);
     return tokens + fpos;
 }
 
@@ -365,3 +363,31 @@ node_t* FindMainFunc(node_t* node, node_t* main_node)
     return main_node;
 }
 
+void CountFBrackets(int pos, node_t* tokens, int* fopened, int* fclosed)
+{
+    (*fopened) = 0, (*fclosed) = 0;
+    for (int i = 0; i < pos; i++)
+    {
+        if (tokens[i].type == FBRACKET_CLOSE)
+            (*fclosed)++;
+        else if (tokens[i].type == FBRACKET_OPEN)
+            (*fopened)++;
+    }
+}
+
+void DestroyTree(node_t* node)
+{
+    assert(node != nullptr);
+
+    if (node->left)
+    {
+        DestroyTree(node->left);
+    }
+
+    if (node->right)
+    {
+        DestroyTree(node->right);
+    }
+
+    free(node);
+}
